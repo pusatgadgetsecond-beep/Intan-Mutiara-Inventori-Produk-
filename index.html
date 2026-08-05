@@ -1919,65 +1919,6 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
   line-height: 1;  /* Mencegah emoji tergeser naik/turun */
 }
 
-/* --- Filter Rekapitulasi --- */
-.custom-date-dropdown {
-      display: none; 
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-      margin-top: 6px;
-      z-index: 100;
-      padding: 8px 0;
-    }
-    .custom-date-dropdown.show-dropdown {
-      display: block; 
-    }
-    .dd-item {
-      padding: 10px 16px;
-      font-size: 13px;
-      color: var(--t1);
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .dd-item:hover {
-      background: #f8fafc;
-    }
-    .dd-item.active {
-      color: #ea580c; 
-    }
-    .dd-item.active .dd-val {
-      color: var(--t2);
-      font-size: 12px;
-      margin-left: auto;
-    }
-.custom-date-inputs {
-    display: none; 
-    padding: 10px 16px; 
-    background: #f8fafc; 
-    border-top: 1px solid var(--border);
-  }
-  .custom-date-inputs.show {
-    display: block;
-  }
-  
-  /* Supaya input date picker native tampil lebih rapi */
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 0.6;
-    transition: 0.2s;
-  }
-  input[type="date"]::-webkit-calendar-picker-indicator:hover {
-    opacity: 1;
-  }
-
 </style>
 </head>
 <body>
@@ -2297,70 +2238,37 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         
         <!-- Panel Filter -->
         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
-          <!-- Grup Filter Tanggal -->
-          <div class="filter-group" style="position: relative;">
-            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--t2); margin-bottom: 8px;">Tanggal Transaksi Dibuat</label>
-            
+          
+          <div class="filter-group" style="position: relative; min-width: 260px;">
             <!-- Tombol Trigger Dropdown -->
-            <button onclick="toggleRekapDropdown()" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--t1); font-size: 13px; cursor: pointer; text-align: left; transition: all 0.2s;">
+            <button onclick="document.getElementById('rekap-date-dropdown').classList.toggle('show-dropdown')" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--t1); font-size: 13px; cursor: pointer; text-align: left; transition: all 0.2s; height: 40px; box-sizing: border-box;">
               <span style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 16px;">📅</span> 
-                <span style="font-weight: 600;" id="rekap-filter-title">Filter Waktu</span> 
-                <span style="color: var(--t2);" id="rekap-filter-text">Semua Waktu</span>
+                <span style="font-size: 14px;">📅</span> 
+                <span style="font-weight: 600;">Minggu Ini:</span> 
+                <span style="color: var(--t2);">27/07/2026 - 30/07/2026</span>
               </span>
               <svg width="16" height="16" fill="none" stroke="var(--t3)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
             </button>
 
             <!-- Isi Dropdown Menu -->
             <div id="rekap-date-dropdown" class="custom-date-dropdown">
-              <div class="dd-item" onclick="setRekapTempFilter('week', this)">
+              <div class="dd-item active">
                 <span class="dd-label">Minggu Ini</span>
-                <span class="dd-val" id="rekap-val-week"></span>
+                <span class="dd-val">27/07/2026 - 30/07/2026</span>
               </div>
-              <div class="dd-item" onclick="setRekapTempFilter('month', this)">
-                <span class="dd-label">Dalam bulan ini</span>
-                <span class="dd-val" id="rekap-val-month"></span>
-              </div>
-              <div class="dd-item" onclick="setRekapTempFilter('3month', this)">
-                <span class="dd-label">Dalam 3 bulan terakhir</span>
-                <span class="dd-val" id="rekap-val-3month"></span>
-              </div>
-              
+              <div class="dd-item">Dalam bulan ini</div>
+              <div class="dd-item">Dalam 3 bulan terakhir</div>
               <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
-              
-              <!-- Pemicu Pilih Tanggal Kustom -->
-              <div class="dd-item" id="rekap-custom-trigger" onclick="toggleRekapCustomInputs()" style="justify-content: space-between; align-items: center; display: flex;">
+              <div class="dd-item" style="justify-content: space-between; align-items: center; display: flex;">
                 Pilih Tanggal
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
               </div>
-
-              <!-- Input Tanggal Kustom (Disembunyikan secara Default) -->
-              <div id="rekap-custom-inputs" class="custom-date-inputs">
-                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-                  <div style="flex:1;">
-                    <label style="font-size: 10px; color: var(--t3); margin-bottom: 4px; display: block;">Dari</label>
-                    <input type="date" id="rekap-start-date" class="flt-in btn-sm" style="width: 100%; padding: 4px; font-size: 11px;">
-                  </div>
-                  <div style="flex:1;">
-                    <label style="font-size: 10px; color: var(--t3); margin-bottom: 4px; display: block;">Sampai</label>
-                    <input type="date" id="rekap-end-date" class="flt-in btn-sm" style="width: 100%; padding: 4px; font-size: 11px;">
-                  </div>
-                </div>
-                <button onclick="applyCustomDateSelection()" class="btn btn-primary btn-sm" style="width: 100%; font-size: 11px;">Set Tanggal</button>
-              </div>
             </div>
           </div>
-          
-          <div style="flex-grow: 1;"></div>
 
-          <!-- Tombol Aksi -->
-          <div style="display: flex; gap: 12px; margin-top: 30px;">
-            <button onclick="resetRekapFilter()" style="flex: 1; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--t2); font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'">
-              Atur Ulang
-            </button>
-            <button onclick="applyRekapFilter()" style="flex: 1; padding: 10px; background: #ff5722; border: 1px solid #ff5722; border-radius: 6px; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(255, 87, 34, 0.2);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-              Terapkan
-            </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" style="height: 40px; padding: 0 20px;">Terapkan</button>
+            <button class="btn btn-glass" style="height: 40px; padding: 0 20px;">Atur Ulang</button>
           </div>
           
         </div>
@@ -2396,9 +2304,51 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         <!-- Tombol navigasi -->
       </div>
     </div>
+
   </div>
   
- 
+  <!-- CSS Khusus untuk Dropdown Filter Rekapitulasi -->
+  <style>
+    .custom-date-dropdown {
+      display: none; 
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      margin-top: 6px;
+      z-index: 100;
+      padding: 8px 0;
+    }
+    .custom-date-dropdown.show-dropdown {
+      display: block; 
+    }
+    .dd-item {
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--t1);
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dd-item:hover {
+      background: #f8fafc;
+    }
+    .dd-item.active {
+      color: #ea580c; 
+    }
+    .dd-item.active .dd-val {
+      color: var(--t2);
+      font-size: 12px;
+      margin-left: auto;
+    }
+  </style>
+
 </div>
 
     <div class="page" id="page-st-riwayat">
@@ -9379,154 +9329,6 @@ function resetLbFilter() {
   renderPaLbLive(blnAngka, thnAngka);
   prosesDataChat(blnAngka, thnAngka);
 }
-
-// ════════════════════════════════════════════════════════════════
-// LOGIKA FILTER REKAPITULASI STOK
-// ════════════════════════════════════════════════════════════════
-
-// Asumsi waktu sistem berjalan hari ini (Berdasarkan Konteks Anda: 31 Juli 2026)
-const REKAP_TODAY = new Date(2026, 6, 31); // Bulan dimulai dari 0 (6 = Juli)
-
-let tempRekapFilter = null; // Menyimpan data pilihan sementara (sebelum Terapkan)
-let activeRekapFilter = null; // Menyimpan filter yang aktif saat ini
-
-// Helper format DD/MM/YYYY
-function formatRekapTgl(date) {
-  const d = String(date.getDate()).padStart(2, '0');
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const y = date.getFullYear();
-  return `${d}/${m}/${y}`;
-}
-
-// Inisialisasi Tanggal saat sistem pertama kali dimuat
-function initRekapFilter() {
-  // Hitung "Minggu Ini" (7 Hari Terakhir: Today - 6 Hari ke Today)
-  const weekStart = new Date(REKAP_TODAY);
-  weekStart.setDate(weekStart.getDate() - 6);
-  document.getElementById('rekap-val-week').textContent = `${formatRekapTgl(weekStart)} - ${formatRekapTgl(REKAP_TODAY)}`;
-
-  // Hitung "Bulan Ini" (1 Juli s/d Hari ini)
-  const monthStart = new Date(REKAP_TODAY.getFullYear(), REKAP_TODAY.getMonth(), 1);
-  document.getElementById('rekap-val-month').textContent = `${formatRekapTgl(monthStart)} - ${formatRekapTgl(REKAP_TODAY)}`;
-
-  // Hitung "3 Bulan Terakhir" (1 April s/d Hari ini) => (Bulan ini dikurangi 3 bulan)
-  const threeMonthStart = new Date(REKAP_TODAY.getFullYear(), REKAP_TODAY.getMonth() - 3, 1);
-  document.getElementById('rekap-val-3month').textContent = `${formatRekapTgl(threeMonthStart)} - ${formatRekapTgl(REKAP_TODAY)}`;
-
-  // Set batasan Maksimal input "Pilih Tanggal" agar tidak bisa memilih di atas hari ini (Agustus dsb)
-  const maxDateStr = `${REKAP_TODAY.getFullYear()}-${String(REKAP_TODAY.getMonth() + 1).padStart(2, '0')}-${String(REKAP_TODAY.getDate()).padStart(2, '0')}`;
-  
-  document.getElementById('rekap-start-date').setAttribute('max', maxDateStr);
-  document.getElementById('rekap-end-date').setAttribute('max', maxDateStr);
-}
-
-// Buka/Tutup Modal Dropdown
-function toggleRekapDropdown() {
-  document.getElementById('rekap-date-dropdown').classList.toggle('show-dropdown');
-}
-
-// Saat user mengklik pilihan preset (Minggu, Bulan, 3 Bulan)
-function setRekapTempFilter(type, el) {
-  // Reset semua warna aktif
-  document.querySelectorAll('#rekap-date-dropdown .dd-item').forEach(item => item.classList.remove('active'));
-  document.getElementById('rekap-custom-inputs').classList.remove('show'); // Sembunyikan custom input
-  el.classList.add('active');
-
-  let textLabel = '';
-  
-  if (type === 'week') {
-    textLabel = document.getElementById('rekap-val-week').textContent;
-    tempRekapFilter = { type: 'Minggu Ini:', val: textLabel };
-  } else if (type === 'month') {
-    textLabel = document.getElementById('rekap-val-month').textContent;
-    tempRekapFilter = { type: 'Bulan Ini:', val: textLabel };
-  } else if (type === '3month') {
-    textLabel = document.getElementById('rekap-val-3month').textContent;
-    tempRekapFilter = { type: '3 Bln Terakhir:', val: textLabel };
-  }
-}
-
-// Menampilkan input tanggal kustom (Pilih Tanggal)
-function toggleRekapCustomInputs() {
-  document.querySelectorAll('#rekap-date-dropdown .dd-item').forEach(item => item.classList.remove('active'));
-  document.getElementById('rekap-custom-trigger').classList.add('active');
-  document.getElementById('rekap-custom-inputs').classList.toggle('show');
-}
-
-// Menangkap nilai input tanggal kustom
-function applyCustomDateSelection() {
-  const start = document.getElementById('rekap-start-date').value;
-  const end = document.getElementById('rekap-end-date').value;
-  
-  if (!start || !end) return toast('Pilih tanggal mulai & akhir terlebih dahulu', 'warn');
-  if (new Date(start) > new Date(end)) return toast('Tanggal mulai tidak boleh melebihi tanggal akhir', 'warn');
-
-  const formattedStart = formatRekapTgl(new Date(start));
-  const formattedEnd = formatRekapTgl(new Date(end));
-
-  tempRekapFilter = {
-    type: 'Kustom:',
-    val: `${formattedStart} - ${formattedEnd}`
-  };
-
-  // Langsung terapkan efek visual highlight agar pengguna tau datanya sudah "diset" sementara
-  toast('Tanggal diset, klik Terapkan untuk melanjutkan', 'ok');
-}
-
-// 📌 1 & 2. FUNGSI TERAPKAN: Memproses pilihan sementara
-function applyRekapFilter() {
-  if (!tempRekapFilter) {
-    return toast('Pilih filter terlebih dahulu', 'warn');
-  }
-  
-  activeRekapFilter = tempRekapFilter;
-
-  // Ubah Tampilan Judul Dropdown
-  document.getElementById('rekap-filter-title').textContent = activeRekapFilter.type;
-  document.getElementById('rekap-filter-text').textContent = activeRekapFilter.val;
-  
-  // Tutup Modal
-  document.getElementById('rekap-date-dropdown').classList.remove('show-dropdown');
-  
-  toast('Filter tabel berhasil diterapkan!', 'ok');
-  
-  // NANTI: Panggil fungsi render ulang tabel data di sini (misal: loadTabelRekap())
-}
-
-// 📌 3. FUNGSI ATUR ULANG: Kembali ke state "Default/Kosong"
-function resetRekapFilter() {
-  tempRekapFilter = null;
-  activeRekapFilter = null;
-
-  // Reset UI
-  document.getElementById('rekap-filter-title').textContent = 'Filter Waktu';
-  document.getElementById('rekap-filter-text').textContent = 'Semua Waktu';
-  document.querySelectorAll('#rekap-date-dropdown .dd-item').forEach(item => item.classList.remove('active'));
-  document.getElementById('rekap-custom-inputs').classList.remove('show');
-  document.getElementById('rekap-start-date').value = '';
-  document.getElementById('rekap-end-date').value = '';
-
-  // Tutup Modal
-  document.getElementById('rekap-date-dropdown').classList.remove('show-dropdown');
-
-  toast('Filter dikembalikan ke default', 'info');
-
-  // NANTI: Panggil ulang fungsi render data tabel untuk me-reset data
-}
-
-// Event penutup dropdown jika user klik sembarang tempat di luar modal filter
-document.addEventListener('click', function(event) {
-  const dropdown = document.getElementById('rekap-date-dropdown');
-  const trigger = dropdown ? dropdown.previousElementSibling : null;
-  
-  if (dropdown && trigger && !trigger.contains(event.target) && !dropdown.contains(event.target)) {
-    dropdown.classList.remove('show-dropdown');
-  }
-});
-
-// Panggil setup tanggal saat aplikasi dimuat pertama kali
-document.addEventListener('DOMContentLoaded', initRekapFilter);
-
 
 </script>
 </body>
