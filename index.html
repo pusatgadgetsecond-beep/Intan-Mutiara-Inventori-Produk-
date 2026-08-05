@@ -96,7 +96,7 @@ a:hover { color: var(--c2); }
 .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
 .sb-logo { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-.sb-logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--c); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: #fff; }
+.sb-logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--c); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .sb-logo-text { font-size: 15px; font-weight: 700; color: var(--t1); line-height: 1.2; }
 .sb-logo-text small { display: block; font-size: 11px; font-weight: 500; color: var(--t3); }
 
@@ -123,7 +123,7 @@ a:hover { color: var(--c2); }
 .tb-title { font-size: 18px; font-weight: 600; color: var(--t1); }
 .tb-title small { display: block; font-size: 12px; color: var(--t3); font-weight: 400; margin-top: 2px; }
 
-.tb-r { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.tb-r { display: flex; align-items: center; gap: 12px; }
 .tb-live { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: var(--g2); color: var(--g); border: 1px solid rgba(34, 197, 94, 0.2); }
 .live-dot { width: 6px; height: 6px; background: var(--g); border-radius: 50%; animation: ldot 1.5s infinite; }
 @keyframes ldot { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -133,11 +133,6 @@ a:hover { color: var(--c2); }
 .tb-mod-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--t2); transition: var(--tx); }
 .tb-mod-btn.on { background: var(--bg2); color: var(--c); box-shadow: var(--sh); font-weight: 600; }
 #themeBtn { display: none; }
-
-/* Hamburger Menu & Overlay Background (Hidden di Desktop) */
-.tb-ham { display: none; width: 36px; height: 36px; border-radius: var(--r); border: 1px solid var(--border); background: var(--bg2); align-items: center; justify-content: center; cursor: pointer; color: var(--t2); font-size: 18px; flex-shrink: 0; }
-.sb-ov { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease; }
-.sb-ov.show { display: block; opacity: 1; pointer-events: all; }
 
 /* ═══════════════════════════════════════════════════════════
    GLOBAL CARDS & CONTAINERS
@@ -269,186 +264,162 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
 .b-ach { background: var(--g2); color: var(--g); }
 .b-exc { background: var(--c3); color: var(--c); }
 .b-mis { background: rgba(239, 68, 68, 0.1); color: var(--r); }
+.b-pro { background: rgba(245, 158, 11, 0.1); color: var(--y); }
+.b-neu { background: var(--bg); color: var(--t3); }
+
+.toast-box { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--sh-modal); font-size: 13px; font-weight: 500; color: var(--t1); animation: tIn .3s ease forwards; }
+.toast.hiding { animation: tOut .3s ease forwards; }
+@keyframes tIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes tOut { to { transform: translateX(100%); opacity: 0; } }
 
 /* ═══════════════════════════════════════════════════════════
-   SMART RESPONSIVE (MOBILE, TABLET, LAPTOP) 
-   [DIADAPTASI AGAR RAPI DI SEMUA LAYAR]
+   RESPONSIVE LAYOUT FIXES
 ═══════════════════════════════════════════════════════════ */
-    /* --- 1. TABLET & LAPTOP KECIL (< 1024px) --- */
-    @media (max-width: 1024px) {
-    :root { --sb: 260px; }
+@media (max-width: 1024px) {
+  :root { --sb: 280px; }
+  .main { margin-left: 0 !important; width: 100vw; }
+  .page-wrap { padding: 16px; } 
+  .topbar { padding: 0 16px; }
+  .tb-mod-switch { display: none; }
   
-    /* JURUS PAMUNGKAS: Tambahkan 'body' di depan agar menang mutlak atas kode manapun */
-    body .main, 
-    body .sidebar ~ .main, 
-    body .sidebar.closed ~ .main { 
-    margin-left: 0 !important; 
-    padding-left: 0 !important;
-    width: 100% !important; 
-    max-width: 100vw !important;
-  }
+  .sidebar { transform: translateX(-100%); box-shadow: 4px 0 24px rgba(0,0,0,0.1); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sb-ov { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 999; display: none; }
+  .sb-ov.show { display: block; }
   
-    .page-wrap { padding: 24px; } 
-    .topbar { padding: 0 24px; height: 64px; }
-    .tb-mod-switch { display: none; } 
-  
-    .tb-ham { display: flex; }
-
-    .sidebar {
-    position: fixed !important; 
-    top: 0; 
-    left: 0; 
-    height: 100vh; 
-    z-index: 10000; 
-    width: var(--sb) !important; 
-    transform: translateX(-100%); 
-    transition: transform 0.3s ease; 
-    box-shadow: var(--sh-modal); 
-  }
-  
-    .sidebar.mobile-open { 
-    transform: translateX(0) !important; 
-  }
-}
-
-    /* --- 2. MOBILE & TABLET PORTRAIT (< 768px) --- */
-    @media (max-width: 768px) {
-    .page-wrap { padding: 16px 12px; }
-  
-    /* Jadikan Grid 1 Kolom Penuh */
-    .stats-grid, .tgt-grid, .form-grid { grid-template-columns: 1fr !important; gap: 16px; }
-  
-    /* Header Bagian Atas Kartu / Tabel */
-    .sec-hd { flex-direction: column; align-items: flex-start; gap: 12px; }
-  
-    /* Pengecualian: Jangan ubah layout pada judul tabel, hanya elemen lain & tombol */
-    .sec-hd > div:not(.sec-ttl) { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-    .sec-hd > .btn, .sec-hd .btn { width: 100%; justify-content: center; padding: 12px; }
-  
-    /* Mengunci Judul Tabel agar tetap menyamping (Baris) & Rata Kiri seperti PC */
-    .sec-ttl { 
-    width: 100%; 
-    display: flex !important; 
-    flex-direction: row !important; 
-    align-items: center !important; 
-    justify-content: flex-start !important; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    font-size: 15px; 
-  }
-  
-    /* --- 3. KONDISI LAPTOP KECIL / TABLET JUMBO (1025px - 1440px) --- */
-    /* Mengubah titik potong dari 768px menjadi 1025px agar tidak bentrok dengan aturan layar di bawah 1024px */
-    @media screen and (min-width: 1025px) and (max-width: 1440px) {
-    :root { --sb: 240px; }
-    .sidebar { width: var(--sb) !important; z-index: 1000; }
-    .sb-nav { overflow-y: auto; overflow-x: hidden; padding: 10px; }
-    .main { width: calc(100% - var(--sb)) !important; margin-left: var(--sb) !important; }
-  }
-
-  /* -------------------------------------------
-     MODAL BOX / POPUP - PENYESUAIAN HP
-  ------------------------------------------- */
-  .st-modal, #page-st-add, .mp-modal-overlay, .fs-modal-overlay { padding: 16px 12px; }
-  .st-modal-box, #page-st-add .card, .mp-modal-container, .fs-modal-container { 
-    max-height: calc(100vh - 32px); 
-    margin: auto;
-  }
-  
-  /* Header Modal - Pastikan tombol X tidak terjepit */
-  .st-head-edit, .mp-modal-header, .fs-modal-header { 
-    padding: 16px; 
-    flex-direction: row !important; 
-    flex-wrap: nowrap !important; 
-    align-items: center !important; 
-    justify-content: space-between !important;
-  }
-  
-  .st-close-btn, .mp-modal-close, .fs-modal-close { 
-    position: static !important; 
-    flex-shrink: 0 !important; 
-    margin-left: 12px !important;
-    width: 36px !important;
-    height: 36px !important;
-  }
-  
-  .mp-modal-body, .fs-modal-body, #page-st-add .form-grid { padding: 16px; }
-  
-  /* Footer Modal - Tombol jadi membentang penuh */
-  .mp-modal-footer, .fs-modal-footer { padding: 16px; flex-direction: column; gap: 10px; }
-  .mp-modal-footer .btn, .fs-modal-footer .btn { width: 100%; justify-content: center; padding: 12px; }
-
-  /* -------------------------------------------
-     TABEL MODE KARTU (CARD VIEW) SUPER RAPI
-  ------------------------------------------- */
-  table { min-width: 0 !important; border: none; }
+  /* Mobile Table to Card Style (No Horizontal Scroll Bleed) */
   .tbl-scroll table, .tbl-scroll thead, .tbl-scroll tbody, .tbl-scroll th, .tbl-scroll td, .tbl-scroll tr { display: block; width: 100%; }
-  
-  /* Sembunyikan header asli tabel */
-  .tbl-scroll thead { display: none; } 
-  
-  /* Styling bungkus baris (menjadi seperti kartu) */
-  .tbl-scroll tbody tr { 
-    border: 1px solid var(--border); 
-    border-radius: var(--r-lg); 
-    margin-bottom: 16px; 
-    padding: 0; 
-    background: var(--bg2); 
-    box-shadow: var(--sh); 
-    overflow: hidden;
-  }
-  
-  /* Styling masing-masing sel (menjadi baris list) */
-  .tbl-scroll td { 
-    border: none; 
-    border-bottom: 1px dashed var(--border); 
-    padding: 14px 16px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    gap: 16px;
-    text-align: right; 
-  }
+  .tbl-scroll thead tr { display: none; }
+  .tbl-scroll tbody tr { border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 16px; padding: 12px; background: var(--bg2); box-shadow: var(--sh); }
+  .tbl-scroll td { border: none; border-bottom: 1px dashed var(--border); padding: 10px 0 10px 40%; text-align: right; position: relative; min-height: 40px; display: flex; justify-content: flex-end; align-items: center; }
   .tbl-scroll td:last-child { border-bottom: none; }
-  
-  /* Memanggil label dari HTML data-label */
-  .tbl-scroll td::before { 
-    content: attr(data-label); 
-    text-align: left; 
-    font-weight: 600; 
-    color: var(--t3); 
-    font-size: 12px; 
-    text-transform: uppercase; 
-    flex-shrink: 0; /* Menahan agar label tidak menyusut */
-  }
-  
-  /* Memaksa text isi tabel agar rapi dan rata kanan */
-  .tbl-scroll td > * { text-align: right; word-break: break-word; margin: 0; }
-  
-  /* Khusus kolom Aksi/Tombol */
-  .tbl-scroll td[data-label="Aksi"] { 
-    justify-content: center; 
-    background: var(--bg3); 
-    padding: 12px; 
-  }
-  .tbl-scroll td[data-label="Aksi"]::before { display: none; }
-  .tbl-scroll td[data-label="Aksi"] .btn { width: 100%; justify-content: center; }
-  
-  /* -------------------------------------------
-     PAGINATION
-  ------------------------------------------- */
-  .pag { flex-direction: column; align-items: stretch; gap: 16px; padding: 16px; }
-  .pag-info { text-align: center; }
-  .pag-btns { justify-content: center; width: 100%; flex-wrap: wrap; }
+  .tbl-scroll td::before { content: attr(data-label); position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 35%; text-align: left; font-weight: 600; color: var(--t3); font-size: 12px; }
+  .st-modal-box, #page-st-add .card, .mp-modal-container, .fs-modal-container { height: 100vh; max-height: 100vh; border-radius: 0; }
 }
 
-/* --- 3. KONDISI TABLET LANDSCAPE JUMBO --- */
-@media screen and (min-width: 768px) and (max-width: 1440px) and (orientation: landscape) {
-  :root { --sb: 240px; }
-  .sidebar { width: var(--sb) !important; z-index: 1000 !important; }
-  .sb-nav { overflow-y: auto !important; overflow-x: hidden !important; padding: 10px !important; }
-  .main { width: calc(100vw - var(--sb)) !important; margin-left: var(--sb) !important; }
+/* ═══════════════════════════════════════════════════════════
+   TAHAP 4: TABEL (Rapi, Sejajar, & Responsive)
+   Fokus: Menghilangkan border ganda & merapikan tombol aksi
+═══════════════════════════════════════════════════════════ */
+.tbl-container {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.tbl-head {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FAFAFA;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table.premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+table.premium-table th {
+  background: var(--bg3);
+  color: var(--t3);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+table.premium-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--t2);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+table.premium-table tr:last-child td { border-bottom: none; }
+table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
+
+/* Tombol Aksi di dalam tabel */
+.td-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  cursor: pointer;
+  transition: var(--tx);
+}
+
+.btn-icon:hover { border-color: var(--c); color: var(--c); background: var(--c3); }
+
+/* ═══════════════════════════════════════════════════════════
+   TAHAP 5: FORM INPUT (Tinggi Seragam & Label Jelas)
+   Fokus: Spasi antar input agar tidak rapat
+═══════════════════════════════════════════════════════════ */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+.form-control {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg2);
+  font-size: 14px;
+  transition: var(--tx);
+}
+
+.form-control:focus {
+  border-color: var(--c);
+  box-shadow: 0 0 0 4px var(--c3);
+  outline: none;
+}
+
+/* Penataan Grid Form */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -636,85 +607,52 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
   .mp-btn-batal, .mp-btn-konfirmasi { flex: 1; text-align: center; justify-content: center; }
 }
 
-/* ==========================================================================
-   TAMPILAN MOBILE: CARD INVENTORI (REFERENSI GAMBAR 2)
-========================================================================== */
+/* ═══════════════════════════════════════════════════════════
+   TAHAP 7: RESPONSIVE (Desktop to Mobile)
+   Fokus: Menghapus horizontal scroll, menyesuaikan layout
+═══════════════════════════════════════════════════════════ */
+
+/* Untuk HP (Screen di bawah 768px) */
 @media (max-width: 768px) {
-  /* 1. Mengubah baris tabel (tr) menjadi Card putih dengan bayangan */
-  .premium-table tbody tr,
-  .tbl-scroll tbody tr {
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border-radius: 16px; /* Membuat sudut melengkung */
-    padding: 16px;
+  .page-wrap { padding: 16px; }
+  
+  /* Membuat tabel menjadi kartu di HP */
+  .premium-table thead { display: none; }
+  .premium-table, .premium-table tbody, .premium-table tr, .premium-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .premium-table tr {
+    border: 1px solid var(--border);
+    border-radius: 12px;
     margin-bottom: 16px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05); /* Shadow halus seperti Gambar 2 */
+    padding: 12px;
+    background: var(--bg2);
+  }
+  
+  .premium-table td {
     border: none;
-  }
-
-  /* 2. Mengatur tata letak Label (kiri) dan Isi Data (kanan) */
-  .premium-table td, 
-  .tbl-scroll td {
+    padding: 8px 0;
     display: flex;
-    justify-content: space-between; 
-    align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px solid #f1f5f9 !important; /* Garis pemisah halus, bukan putus-putus */
-    
-    /* Format teks isi data (Misal: "iTel Vision 1 Pro...") */
-    text-align: right; 
-    font-size: 14px;
-    font-weight: 500;
-    color: #334155; 
-    word-break: break-word; /* Mencegah teks panjang menabrak label */
-  }
-
-  /* Hilangkan garis pembatas di elemen data terakhir */
-  .premium-table td:last-child,
-  .tbl-scroll td:last-child {
-    border-bottom: none !important;
-  }
-
-  /* 3. Menyamakan gaya Label persis seperti Gambar 2 (Kapital & Abu-abu) */
-  .premium-table td::before,
-  .tbl-scroll td::before {
-    content: attr(data-label);
-    font-size: 12px;
-    font-weight: 600;
-    color: #94a3b8; /* Warna abu-abu pudar */
-    text-transform: uppercase; /* Memaksa huruf kapital (Contoh: NAMA PRODUK) */
-    letter-spacing: 0.5px;
-    text-align: left;
-    flex-shrink: 0; 
-    width: 35%; /* Mengunci ruang kiri agar tidak tergeser teks panjang */
-  }
-
-  /* 4. Memposisikan Tombol Edit & Hapus di Kanan Bawah */
-  .premium-table td[data-label="Aksi"],
-  .tbl-scroll td[data-label="Aksi"] {
-    display: flex !important;
-    justify-content: flex-end !important;
+    justify-content: space-between;
     align-items: center;
-    padding-top: 16px; /* Memberi jarak dari data di atasnya */
-    margin-top: 4px;
-    border-bottom: none !important;
   }
-
-  /* Menyembunyikan kata "Aksi" agar tidak menuh-menuhin tempat */
-  .premium-table td[data-label="Aksi"]::before,
-  .tbl-scroll td[data-label="Aksi"]::before {
-    display: none !important; 
+  
+  .premium-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--t3);
+    font-size: 12px;
   }
-
-  /* Wrapper pelindung untuk tombol */
-  .td-actions {
-    display: flex !important;
-    gap: 10px;
-    justify-content: flex-end;
+  
+  /* Modal jadi fullscreen di HP */
+  .modal-container {
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
   }
 }
-
 /* ===========================
    Search Input + Clear Button
 =========================== */
@@ -1981,6 +1919,65 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
   line-height: 1;  /* Mencegah emoji tergeser naik/turun */
 }
 
+/* --- Filter Rekapitulasi --- */
+.custom-date-dropdown {
+      display: none; 
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      margin-top: 6px;
+      z-index: 100;
+      padding: 8px 0;
+    }
+    .custom-date-dropdown.show-dropdown {
+      display: block; 
+    }
+    .dd-item {
+      padding: 10px 16px;
+      font-size: 13px;
+      color: var(--t1);
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .dd-item:hover {
+      background: #f8fafc;
+    }
+    .dd-item.active {
+      color: #ea580c; 
+    }
+    .dd-item.active .dd-val {
+      color: var(--t2);
+      font-size: 12px;
+      margin-left: auto;
+    }
+.custom-date-inputs {
+    display: none; 
+    padding: 10px 16px; 
+    background: #f8fafc; 
+    border-top: 1px solid var(--border);
+  }
+  .custom-date-inputs.show {
+    display: block;
+  }
+  
+  /* Supaya input date picker native tampil lebih rapi */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.2s;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+
 </style>
 </head>
 <body>
@@ -2036,17 +2033,11 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
     <div class="sb-item" data-mod="imc" data-page="kc-dash">
       <div class="sb-ic">📊</div><span>Dashboard</span>
     </div>
-    <div class="sb-item" data-mod="imc" data-page="kc-input">
-      <div class="sb-ic">✏️</div><span>Input Konten</span>
-    </div>
     <div class="sb-item" data-mod="imc" data-page="kc-data">
       <div class="sb-ic">📋</div><span>Data Konten</span>
     </div>
     <div class="sb-item" data-mod="imc" data-page="kc-rank">
       <div class="sb-ic">🏆</div><span>Ranking</span>
-    </div>
-    <div class="sb-item" data-mod="imc" data-page="kc-chart">
-      <div class="sb-ic">📈</div><span>Analytics</span>
     </div>
  
     <div class="sb-divider"></div>
@@ -2054,6 +2045,9 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
     <div class="sb-sec" id="nav-sec-stock">📦 Stok Second</div>
     <div class="sb-item" data-mod="stock" data-page="st-main">
       <div class="sb-ic">🗃️</div><span>Inventori Stok</span>
+    </div>
+    <div class="sb-item" data-mod="stock" data-page="st-rekap">
+      <div class="sb-ic">📑</div><span>Rekapitulasi</span>
     </div>
     <div class="sb-item" data-mod="stock" data-page="st-riwayat">
       <div class="sb-ic">🕒</div><span>Riwayat Revisi</span>
@@ -2126,57 +2120,6 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         <div class="card tgt-card" id="tgt-bulanan"></div>
         <div class="card tgt-card" id="tgt-harian"></div>
       </div>
-      <div class="sec-hd" style="margin-bottom:14px">
-        <div class="sec-ttl">View Harian — Bulan Ini</div>
-      </div>
-      <div class="card cp" style="margin-bottom:0">
-        <div class="ch-h"><canvas id="chartKcDaily"></canvas></div>
-      </div>
-    </div>
- 
-    <div class="page" id="page-kc-input">
-      <div class="card cp" style="max-width:860px">
-        <div class="sec-hd">
-          <div class="sec-ttl" id="kc-form-title">✏️ Tambah Konten Baru</div>
-        </div>
-        <div class="form-grid" style="margin-bottom:16px">
-          <div class="fg">
-            <label for="kc-tgl">📅 Tanggal & Waktu</label>
-            <input class="fc" type="datetime-local" id="kc-tgl" name="tanggal_konten"/>
-          </div>
-          <div class="fg">
-            <label for="kc-plat">📌 Platform</label>
-            <select class="fc" id="kc-plat" name="platform">
-              <option value="Instagram">📸 Instagram</option>
-              <option value="TikTok">🎵 TikTok</option>
-            </select>
-          </div>
-          <div class="fg full">
-            <label for="kc-link">🔗 Link Konten *</label>
-            <input class="fc" type="url" id="kc-link" name="link_konten" placeholder="https://www.instagram.com/..."/>
-          </div>
-          <div class="fg full">
-            <label for="kc-judul">📝 Judul Konten *</label>
-            <input class="fc" type="text" id="kc-judul" name="judul_konten" placeholder="Masukkan judul konten..."/>
-          </div>
-          <div class="fg">
-            <label for="kc-view">👁️ Jumlah View</label>
-            <input class="fc" type="number" id="kc-view" name="jumlah_view" value="0" min="0"/>
-          </div>
-          <div class="fg">
-            <label for="kc-sig">📱 Story IG</label>
-            <input class="fc" type="number" id="kc-sig" name="story_ig" value="0" min="0"/>
-          </div>
-          <div class="fg">
-            <label for="kc-stk">🎬 Story TikTok</label>
-            <input class="fc" type="number" id="kc-stk" name="story_tiktok" value="0" min="0"/>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" id="kc-submit-btn" onclick="kcSubmit()">💾 Simpan Data</button>
-          <button class="btn btn-glass" onclick="kcReset()">↺ Reset</button>
-        </div>
-      </div>
     </div>
  
     <div class="page" id="page-kc-data">
@@ -2229,29 +2172,6 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         <div class="card cp">
           <div class="sec-hd"><div class="sec-ttl">🎵 Top 10 TikTok</div></div>
           <div class="rank-list" id="kc-rank-tt"></div>
-        </div>
-      </div>
-    </div>
- 
-    <div class="page" id="page-kc-chart">
-      <div class="chart-grid">
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">View Harian (Bulan Ini)</div></div>
-          <div class="ch-h"><canvas id="chartKcDailyFull"></canvas></div>
-        </div>
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">Distribusi Platform</div></div>
-          <div class="ch-h"><canvas id="chartKcPie"></canvas></div>
-        </div>
-      </div>
-      <div class="chart-grid-2">
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">View Bulanan</div></div>
-          <div class="ch-h-sm"><canvas id="chartKcMonthly"></canvas></div>
-        </div>
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">Perbandingan Platform</div></div>
-          <div class="ch-h-sm"><canvas id="chartKcBar"></canvas></div>
         </div>
       </div>
     </div>
@@ -2360,7 +2280,127 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         </div>
       </div>
     </div>
+
+    <!-- HALAMAN REKAPITULASI -->
+    <div class="page" id="page-st-rekap">
+    <div class="card" style="padding:0; overflow:visible;">
+    
+    <!-- ================= HEADER & FILTER ================= -->
+    <div class="cp-sm" style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
+      <div class="sec-hd" style="margin:0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        
+        <!-- Judul -->
+        <div>
+          <div class="sec-ttl" style="font-size: 16px; margin: 0;">📑 Rekapitulasi Stok</div>
+          <div style="font-size: 11px; color: var(--t3); margin-top: 4px; font-weight: 500;">Ringkasan dan laporan keseluruhan data stok produk</div>
+        </div>
+        
+        <!-- Panel Filter -->
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
+          <!-- Grup Filter Tanggal -->
+          <div class="filter-group" style="position: relative;">
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--t2); margin-bottom: 8px;">Tanggal Transaksi Dibuat</label>
+            
+            <!-- Tombol Trigger Dropdown -->
+            <button onclick="toggleRekapDropdown()" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--t1); font-size: 13px; cursor: pointer; text-align: left; transition: all 0.2s;">
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">📅</span> 
+                <span style="font-weight: 600;" id="rekap-filter-title">Filter Waktu</span> 
+                <span style="color: var(--t2);" id="rekap-filter-text">Semua Waktu</span>
+              </span>
+              <svg width="16" height="16" fill="none" stroke="var(--t3)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+
+            <!-- Isi Dropdown Menu -->
+            <div id="rekap-date-dropdown" class="custom-date-dropdown">
+              <div class="dd-item" onclick="setRekapTempFilter('week', this)">
+                <span class="dd-label">Minggu Ini</span>
+                <span class="dd-val" id="rekap-val-week"></span>
+              </div>
+              <div class="dd-item" onclick="setRekapTempFilter('month', this)">
+                <span class="dd-label">Dalam bulan ini</span>
+                <span class="dd-val" id="rekap-val-month"></span>
+              </div>
+              <div class="dd-item" onclick="setRekapTempFilter('3month', this)">
+                <span class="dd-label">Dalam 3 bulan terakhir</span>
+                <span class="dd-val" id="rekap-val-3month"></span>
+              </div>
+              
+              <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
+              
+              <!-- Pemicu Pilih Tanggal Kustom -->
+              <div class="dd-item" id="rekap-custom-trigger" onclick="toggleRekapCustomInputs()" style="justify-content: space-between; align-items: center; display: flex;">
+                Pilih Tanggal
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+              </div>
+
+              <!-- Input Tanggal Kustom (Disembunyikan secara Default) -->
+              <div id="rekap-custom-inputs" class="custom-date-inputs">
+                <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                  <div style="flex:1;">
+                    <label style="font-size: 10px; color: var(--t3); margin-bottom: 4px; display: block;">Dari</label>
+                    <input type="date" id="rekap-start-date" class="flt-in btn-sm" style="width: 100%; padding: 4px; font-size: 11px;">
+                  </div>
+                  <div style="flex:1;">
+                    <label style="font-size: 10px; color: var(--t3); margin-bottom: 4px; display: block;">Sampai</label>
+                    <input type="date" id="rekap-end-date" class="flt-in btn-sm" style="width: 100%; padding: 4px; font-size: 11px;">
+                  </div>
+                </div>
+                <button onclick="applyCustomDateSelection()" class="btn btn-primary btn-sm" style="width: 100%; font-size: 11px;">Set Tanggal</button>
+              </div>
+            </div>
+          </div>
+          
+          <div style="flex-grow: 1;"></div>
+
+          <!-- Tombol Aksi -->
+          <div style="display: flex; gap: 12px; margin-top: 30px;">
+            <button onclick="resetRekapFilter()" style="flex: 1; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--t2); font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'">
+              Atur Ulang
+            </button>
+            <button onclick="applyRekapFilter()" style="flex: 1; padding: 10px; background: #ff5722; border: 1px solid #ff5722; border-radius: 6px; color: #fff; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(255, 87, 34, 0.2);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+              Terapkan
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TABEL KONTEN (FULL WIDTH) ================= -->
+    <div class="tbl-scroll">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>NO</th>
+            <th>TYPE PRODUK</th>
+            <th>KATEGORI</th>
+            <th>TERJUAL</th>
+          </tr>
+        </thead>
+        <tbody id="st-rekap-tbody">
+          <!-- Data dari Google Sheets -->
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
+              Memuat data rekapitulasi...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- ================= PAGINASI ================= -->
+    <div class="pag" style="padding:12px 24px; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px; background-color: #fff;">
+      <span class="pag-info" id="st-rekap-pinfo">Menampilkan 0 data</span>
+      <div class="pag-btns" id="st-rekap-pbtns">
+        <!-- Tombol navigasi -->
+      </div>
+    </div>
+  </div>
+  
  
+</div>
+
     <div class="page" id="page-st-riwayat">
       <div class="card" style="padding:0;overflow:hidden">
         <div class="cp-sm" style="border-bottom:1px solid var(--border)">
@@ -3607,15 +3647,15 @@ function toggleTheme(){
    NAVIGATION
 ═══════════════════════════════════════════════════════════ */
 const PG_TITLES={
-  'kc-dash':'Dashboard','kc-input':'Input Konten','kc-data':'Data Konten',
-  'kc-rank':'Ranking Konten','kc-chart':'Analytics',
+  'kc-dash':'Dashboard','kc-data':'Data Konten',
+  'kc-rank':'Ranking Konten',
   'st-main':'Inventori Stok','st-riwayat':'Riwayat Revisi','st-add':'Tambah Produk', 'st-flash': 'Daftar Promosi Flash Sale',
   'pa-dash':'Dashboard','pa-offline':'Penjualan Offline','pa-online':'Penjualan Online',
   'pa-live':'Performa Live','pa-chat':'Performa Chat','pa-lb':'Leaderboard',
 };
 const PG_SUBS={
-  'kc-dash':'IMC Monitoring','kc-input':'IMC Monitoring','kc-data':'IMC Monitoring',
-  'kc-rank':'IMC Monitoring','kc-chart':'IMC Monitoring',
+  'kc-dash':'IMC Monitoring','kc-data':'IMC Monitoring',
+  'kc-rank':'IMC Monitoring',
   'st-main':'Stock Inventori','st-riwayat':'Stock Inventori','st-add':'Stock Inventori', 'st-flash': 'Stock Inventori',
   'pa-dash':'Performa Admin','pa-offline':'Performa Admin','pa-online':'Performa Admin',
   'pa-live':'Performa Admin','pa-chat':'Performa Admin','pa-lb':'Performa Admin',
@@ -4426,7 +4466,8 @@ window.stSubmit = async function(){
   }
 
   const isEdit = !!S.st.editId;
-  const loadingText = isEdit ? 'Sedang Memperbarui Produk...' : 'Sedang Menambahkan Produk...';
+  // ⚠️ PENTING: Simpan ID sekarang agar tidak hilang saat form di-reset oleh stReset()
+  const editId = S.st.editId; 
   const btn = $('st-submit-btn');
 
   // 1. Tampilkan status loading di tombol dan disable klik ganda
@@ -4435,20 +4476,35 @@ window.stSubmit = async function(){
     btn.innerHTML = '<span class="btn-spinner"></span> Memproses...';
   }
 
-  // 2. Tutup Modal Popup Form langsung dengan animasi halus
+  // 2. Tutup Modal Popup Form langsung
   closeStModal();
 
-  // 3. Jeda 250ms untuk menunggu animasi tutup modal, lalu panggil Overlay Full Screen
-  await new Promise(resolve => setTimeout(resolve, 250));
-  showLoad(true, loadingText);
+  // ════════════════════════════════════════════════════════════════
+  // 🚀 OPTIMASI: LANGSUNG TAMPILKAN DI TABEL WEB & KOSONGKAN FORM
+  // ════════════════════════════════════════════════════════════════
+  if (isEdit) {
+    const idx = S.st.data.findIndex(x => String(x['Id Produk']) === String(editId));
+    if (idx !== -1) {
+      S.st.data[idx] = { ...S.st.data[idx], ...payload };
+    }
+  } else {
+    S.st.data.unshift(payload);
+  }
+
+  // Render tabel, statistik, dan reset form detik ini juga (0 detik)
+  renderStTable();
+  renderStStats();
+  stReset();
+  toast(isEdit ? '✨ Produk diperbarui! (Menyimpan ke Sheet...)' : '✨ Produk ditambahkan! (Menyimpan ke Sheet...)', 'ok');
+  // ════════════════════════════════════════════════════════════════
 
   try {
     let res;
-    // 4. Update data pada Sheet Stok (via POST)
+    // 3. Update data pada Sheet Stok via POST (Menggunakan variabel editId yang aman)
     if (isEdit) {
       const r = await fetch(CFG.apiDATA, {
         method: 'POST', 
-        body: JSON.stringify({action: 'update', sheet: CFG.sheetStock, keyCol: 'Id Produk', keyVal: S.st.editId, data: payload})
+        body: JSON.stringify({action: 'update', sheet: CFG.sheetStock, keyCol: 'Id Produk', keyVal: editId, data: payload})
       });
       res = await r.json();
     } else {
@@ -4461,33 +4517,25 @@ window.stSubmit = async function(){
 
     if (res.error) throw new Error(res.error);
 
-    // 5. Reload data Inventori dan Riwayat Revisi dari Spreadsheet secara Paralel
+    // 4. Reload data Inventori dan Riwayat Revisi dari Spreadsheet secara Paralel (100% Asli Kode Anda)
     const [stRes, rwRes] = await Promise.all([
       apiGet(CFG.apiDATA, CFG.sheetStock),
       apiGet(CFG.apiDATA, CFG.sheetRiwayat)
     ]);
 
-    // Perbarui state lokal
+    // Perbarui state lokal dengan data resmi dari Sheet yang sudah tersimpan
     if(Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
     if(Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse(); else S.st.riwayat = [];
 
-    // Render ulang UI
+    // Render ulang UI agar ID permanen dari Sheet tersinkronisasi
     renderStTable();
     renderStStats();
     if (typeof renderStRiwayat === 'function') {
       renderStRiwayat(); 
     }
 
-    // 6. Matikan Overlay Full Screen
-    showLoad(false);
-
-    // 7. Tampilkan Toast Success sesuai UI tema
-    toast(isEdit ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'ok');
-
   } catch (err) {
-    // Matikan Loading dan Munculkan Toast Error jika gagal
-    showLoad(false);
-    toast('❌ Gagal menyimpan produk. Silakan coba kembali.', 'err');
+    toast('❌ Gagal menyimpan ke Sheet. Silakan coba kembali.', 'err');
     console.error(err);
   } finally {
     // Kembalikan kondisi tombol normal
@@ -4557,19 +4605,35 @@ window.panggilStEdit = function(btnElement) {
 };
 
 window.stDelete = async function(id,nm){
-  const conf=await Swal.fire({title:'Hapus Produk?',html:`<small>${esc(nm)}</small>`,icon:'warning',showCancelButton:true,confirmButtonColor:'#F87171',cancelButtonText:'Batal',confirmButtonText:'Hapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff'});
+  const conf = await Swal.fire({title:'Hapus Produk?',html:`<small>${esc(nm)}</small>`,icon:'warning',showCancelButton:true,confirmButtonColor:'#F87171',cancelButtonText:'Batal',confirmButtonText:'Hapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff'});
   if(!conf.isConfirmed) return;
-  Swal.fire({title:'Menghapus...',allowOutsideClick:false,background:'rgba(3,13,26,.97)',color:'#eff8ff',didOpen:()=>Swal.showLoading()});
-  try{
+
+  // ════════════════════════════════════════════════════════════════
+  // 🚀 OPTIMASI: LANGSUNG HAPUS DARI TABEL WEB TANPA LOADING
+  // ════════════════════════════════════════════════════════════════
+  S.st.data = S.st.data.filter(x => String(x['Id Produk']) !== String(id));
+  renderStTable();
+  renderStStats();
+  toast('🗑️ Produk dihapus! (Menyinkronkan ke Sheet...)', 'ok');
+  // ════════════════════════════════════════════════════════════════
+
+  try {
     const res = await apiDel(CFG.apiDATA, 'Id Produk', id, CFG.sheetStock);
     if(res.error) throw new Error(res.error);
-    Swal.fire({icon:'success',title:'Dihapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff',timer:1400,showConfirmButton:false});
-    // === OPTIMASI LOKAL UPDATE (0 DETIK) ===
-    S.st.data = S.st.data.filter(x => x['Id Produk'] !== id);
+    
+    // Sinkronkan ulang riwayat dari sheet agar data tetap konsisten dengan server
+    const [stRes, rwRes] = await Promise.all([
+      apiGet(CFG.apiDATA, CFG.sheetStock),
+      apiGet(CFG.apiDATA, CFG.sheetRiwayat)
+    ]);
+    if(Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
+    if(Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse(); else S.st.riwayat = [];
     renderStTable();
     renderStStats();
-    // =======================================
-  }catch(e){ Swal.fire({icon:'error',title:'Gagal Hapus',text:e.message,background:'rgba(3,13,26,.97)',color:'#eff8ff',confirmButtonColor:'#00b4d8'}); }
+    if (typeof renderStRiwayat === 'function') renderStRiwayat();
+  } catch(e) { 
+    Swal.fire({icon:'error',title:'Gagal Hapus dari Server',text:e.message,background:'rgba(3,13,26,.97)',color:'#eff8ff',confirmButtonColor:'#00b4d8'}); 
+  }
 };
 
 /* ==========================================
@@ -9315,6 +9379,154 @@ function resetLbFilter() {
   renderPaLbLive(blnAngka, thnAngka);
   prosesDataChat(blnAngka, thnAngka);
 }
+
+// ════════════════════════════════════════════════════════════════
+// LOGIKA FILTER REKAPITULASI STOK
+// ════════════════════════════════════════════════════════════════
+
+// Asumsi waktu sistem berjalan hari ini (Berdasarkan Konteks Anda: 31 Juli 2026)
+const REKAP_TODAY = new Date(2026, 6, 31); // Bulan dimulai dari 0 (6 = Juli)
+
+let tempRekapFilter = null; // Menyimpan data pilihan sementara (sebelum Terapkan)
+let activeRekapFilter = null; // Menyimpan filter yang aktif saat ini
+
+// Helper format DD/MM/YYYY
+function formatRekapTgl(date) {
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+
+// Inisialisasi Tanggal saat sistem pertama kali dimuat
+function initRekapFilter() {
+  // Hitung "Minggu Ini" (7 Hari Terakhir: Today - 6 Hari ke Today)
+  const weekStart = new Date(REKAP_TODAY);
+  weekStart.setDate(weekStart.getDate() - 6);
+  document.getElementById('rekap-val-week').textContent = `${formatRekapTgl(weekStart)} - ${formatRekapTgl(REKAP_TODAY)}`;
+
+  // Hitung "Bulan Ini" (1 Juli s/d Hari ini)
+  const monthStart = new Date(REKAP_TODAY.getFullYear(), REKAP_TODAY.getMonth(), 1);
+  document.getElementById('rekap-val-month').textContent = `${formatRekapTgl(monthStart)} - ${formatRekapTgl(REKAP_TODAY)}`;
+
+  // Hitung "3 Bulan Terakhir" (1 April s/d Hari ini) => (Bulan ini dikurangi 3 bulan)
+  const threeMonthStart = new Date(REKAP_TODAY.getFullYear(), REKAP_TODAY.getMonth() - 3, 1);
+  document.getElementById('rekap-val-3month').textContent = `${formatRekapTgl(threeMonthStart)} - ${formatRekapTgl(REKAP_TODAY)}`;
+
+  // Set batasan Maksimal input "Pilih Tanggal" agar tidak bisa memilih di atas hari ini (Agustus dsb)
+  const maxDateStr = `${REKAP_TODAY.getFullYear()}-${String(REKAP_TODAY.getMonth() + 1).padStart(2, '0')}-${String(REKAP_TODAY.getDate()).padStart(2, '0')}`;
+  
+  document.getElementById('rekap-start-date').setAttribute('max', maxDateStr);
+  document.getElementById('rekap-end-date').setAttribute('max', maxDateStr);
+}
+
+// Buka/Tutup Modal Dropdown
+function toggleRekapDropdown() {
+  document.getElementById('rekap-date-dropdown').classList.toggle('show-dropdown');
+}
+
+// Saat user mengklik pilihan preset (Minggu, Bulan, 3 Bulan)
+function setRekapTempFilter(type, el) {
+  // Reset semua warna aktif
+  document.querySelectorAll('#rekap-date-dropdown .dd-item').forEach(item => item.classList.remove('active'));
+  document.getElementById('rekap-custom-inputs').classList.remove('show'); // Sembunyikan custom input
+  el.classList.add('active');
+
+  let textLabel = '';
+  
+  if (type === 'week') {
+    textLabel = document.getElementById('rekap-val-week').textContent;
+    tempRekapFilter = { type: 'Minggu Ini:', val: textLabel };
+  } else if (type === 'month') {
+    textLabel = document.getElementById('rekap-val-month').textContent;
+    tempRekapFilter = { type: 'Bulan Ini:', val: textLabel };
+  } else if (type === '3month') {
+    textLabel = document.getElementById('rekap-val-3month').textContent;
+    tempRekapFilter = { type: '3 Bln Terakhir:', val: textLabel };
+  }
+}
+
+// Menampilkan input tanggal kustom (Pilih Tanggal)
+function toggleRekapCustomInputs() {
+  document.querySelectorAll('#rekap-date-dropdown .dd-item').forEach(item => item.classList.remove('active'));
+  document.getElementById('rekap-custom-trigger').classList.add('active');
+  document.getElementById('rekap-custom-inputs').classList.toggle('show');
+}
+
+// Menangkap nilai input tanggal kustom
+function applyCustomDateSelection() {
+  const start = document.getElementById('rekap-start-date').value;
+  const end = document.getElementById('rekap-end-date').value;
+  
+  if (!start || !end) return toast('Pilih tanggal mulai & akhir terlebih dahulu', 'warn');
+  if (new Date(start) > new Date(end)) return toast('Tanggal mulai tidak boleh melebihi tanggal akhir', 'warn');
+
+  const formattedStart = formatRekapTgl(new Date(start));
+  const formattedEnd = formatRekapTgl(new Date(end));
+
+  tempRekapFilter = {
+    type: 'Kustom:',
+    val: `${formattedStart} - ${formattedEnd}`
+  };
+
+  // Langsung terapkan efek visual highlight agar pengguna tau datanya sudah "diset" sementara
+  toast('Tanggal diset, klik Terapkan untuk melanjutkan', 'ok');
+}
+
+// 📌 1 & 2. FUNGSI TERAPKAN: Memproses pilihan sementara
+function applyRekapFilter() {
+  if (!tempRekapFilter) {
+    return toast('Pilih filter terlebih dahulu', 'warn');
+  }
+  
+  activeRekapFilter = tempRekapFilter;
+
+  // Ubah Tampilan Judul Dropdown
+  document.getElementById('rekap-filter-title').textContent = activeRekapFilter.type;
+  document.getElementById('rekap-filter-text').textContent = activeRekapFilter.val;
+  
+  // Tutup Modal
+  document.getElementById('rekap-date-dropdown').classList.remove('show-dropdown');
+  
+  toast('Filter tabel berhasil diterapkan!', 'ok');
+  
+  // NANTI: Panggil fungsi render ulang tabel data di sini (misal: loadTabelRekap())
+}
+
+// 📌 3. FUNGSI ATUR ULANG: Kembali ke state "Default/Kosong"
+function resetRekapFilter() {
+  tempRekapFilter = null;
+  activeRekapFilter = null;
+
+  // Reset UI
+  document.getElementById('rekap-filter-title').textContent = 'Filter Waktu';
+  document.getElementById('rekap-filter-text').textContent = 'Semua Waktu';
+  document.querySelectorAll('#rekap-date-dropdown .dd-item').forEach(item => item.classList.remove('active'));
+  document.getElementById('rekap-custom-inputs').classList.remove('show');
+  document.getElementById('rekap-start-date').value = '';
+  document.getElementById('rekap-end-date').value = '';
+
+  // Tutup Modal
+  document.getElementById('rekap-date-dropdown').classList.remove('show-dropdown');
+
+  toast('Filter dikembalikan ke default', 'info');
+
+  // NANTI: Panggil ulang fungsi render data tabel untuk me-reset data
+}
+
+// Event penutup dropdown jika user klik sembarang tempat di luar modal filter
+document.addEventListener('click', function(event) {
+  const dropdown = document.getElementById('rekap-date-dropdown');
+  const trigger = dropdown ? dropdown.previousElementSibling : null;
+  
+  if (dropdown && trigger && !trigger.contains(event.target) && !dropdown.contains(event.target)) {
+    dropdown.classList.remove('show-dropdown');
+  }
+});
+
+// Panggil setup tanggal saat aplikasi dimuat pertama kali
+document.addEventListener('DOMContentLoaded', initRekapFilter);
+
 
 </script>
 </body>
