@@ -4316,12 +4316,20 @@ function renderStStats(){
 function stFilter(){
   const q=($('st-search')?.value||'').toLowerCase();
   let r=[...S.st.data];
+  
   if(q) r=r.filter(d=>[d['Nama Produk'],d['Id Produk'],d['Nama Variasi']].some(v=>String(v||'').toLowerCase().includes(q)));
   const f=S.st.filter, gs=d=>parseInt(d['Stok Lama'])||0;
   if(f==='ada')      r=r.filter(d=>gs(d)>0);
   if(f==='habis')    r=r.filter(d=>gs(d)===0);
   if(f==='menipis')  r=r.filter(d=>{ const s=gs(d); return s>0&&s<5; });
   if(f==='no-harga') r=r.filter(d=>!String(d['Harga Jual Saat Ini']||'').replace(/\D/g,''));
+  // --- KODE BARU: Sorting default abjad A-Z berdasarkan Nama Produk ---
+  r.sort((a, b) => {
+    const namaA = String(a['Nama Produk'] || '').toLowerCase();
+    const namaB = String(b['Nama Produk'] || '').toLowerCase();
+    return namaA.localeCompare(namaB);
+  });
+  // --------------------------------------------------------------------
   S.st.filtered=r; S.st.page=1; renderStTableBody();
 }
  
@@ -5215,30 +5223,21 @@ function renderPaTabelBulanEcommerce(bulan, tahun) {
 function renderPaTabelHarianEcommerce() {
   // 1. LOGIKA TANGGAL (HARI INI, KEMARIN, LUSA)
   const today = new Date();
-  
-  const kemarin = new Date(today);
-  kemarin.setDate(today.getDate() - 1);
-  
-  const lusa = new Date(today);
-  lusa.setDate(today.getDate() - 2);
+  today.setHours(0, 0, 0, 0); // Normalisasi jam ke 00:00:00 agar akurat
 
-  // Helper pencocokan tanggal (agar otomatis mendeteksi format tanggal dari Sheet)
+  const kemarin = new Date(today);
+  kemarin.setDate(kemarin.getDate() - 1);
+
+  const lusa = new Date(today);
+  lusa.setDate(lusa.getDate() - 2);
+
+  // Helper pencocokan tanggal (Menggunakan parseTgl bawaan yang tahan banting)
   function isSameDate(dateStr, targetDate) {
     if (!dateStr) return false;
-    let d;
-    let str = dateStr.toString().split(' ')[0]; // Ambil tanggalnya saja tanpa jam
-    if (str.includes('/')) {
-        const p = str.split('/');
-        // Jika format DD/MM/YYYY
-        if (p[2] && p[2].length === 4) d = new Date(p[2], p[1] - 1, p[0]);
-        // Jika format YYYY/MM/DD
-        else if (p[0] && p[0].length === 4) d = new Date(p[0], p[1] - 1, p[2]);
-        else d = new Date(dateStr);
-    } else {
-        d = new Date(dateStr); // Otomatis baca format "dd mmmm yyyy"
-    }
     
-    if (isNaN(d.getTime())) return false;
+    // Meneruskan ke parseTgl agar support bulan Indonesia ("Agustus", dsb)
+    const d = parseTgl(dateStr); 
+    if (!d || isNaN(d.getTime())) return false;
     
     return d.getDate() === targetDate.getDate() &&
            d.getMonth() === targetDate.getMonth() &&
@@ -5247,7 +5246,6 @@ function renderPaTabelHarianEcommerce() {
 
   // 2. AMBIL DATA DARI SHEET ONLINE (Filter Lusa & Kemarin)
   const sourceData = S.pa.online || S.pa.penjualan || [];
-  // Ganti 'Tanggal' di bawah ini dengan nama header kolom tanggal di sheet-mu jika berbeda
   const dataKemarin = sourceData.filter(r => isSameDate(r['Tanggal'] || r['Date'] || r['Waktu'], kemarin));
   const dataLusa = sourceData.filter(r => isSameDate(r['Tanggal'] || r['Date'] || r['Waktu'], lusa));
 
@@ -5329,7 +5327,7 @@ function renderPaTabelHarianEcommerce() {
     `;
   });
 
-  // 5. RENDER BARIS TOTAL (Format dipisah persis seperti Tabel Bulanan)
+  // 5. RENDER BARIS TOTAL
   if (ecommerceMaster.length > 0) {
     html += `
       <tr style="font-weight: bold; background-color: #f8fafc; border-top: 2px solid #e2e8f0; color: #0f172a;">
