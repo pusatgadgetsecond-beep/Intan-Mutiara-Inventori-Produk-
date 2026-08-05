@@ -3358,7 +3358,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbxjhD8dmSWPoAaKJr90jK2BlJejiuBHKWo7C050OQGiu9YvyNafIRNtUxCFj8XyksUm3A/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbxw00fnf7unHsaE-I4vadXKfoMhgsMEkibRv9qclmyp3BIX8LnqAd0lxHJnuUnEZdgeUQ/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -3442,11 +3442,25 @@ function parseTgl(str) {
 
   let s = String(str).trim();
   
-  // Handle format DD/MM/YYYY
+  // === FIX UNTUK MEMBACA FORMAT: dd/MM/yyyy HH:mm:ss ===
   if (s.includes('/')) {
-    const p = s.split('/');
+    // Pisahkan antara tanggal dan waktu ("15/08/2026" dan "14:30:00")
+    let parts = s.split(/\s+/); 
+    let datePart = parts[0].split('/'); // Hasil: [Tanggal, Bulan, Tahun]
+    
+    // Default waktu 0 jika tidak ada jamnya
+    let hh = 0, mm = 0, ss = 0; 
+    
+    // Jika ada waktunya, ekstrak jam, menit, detik
+    if (parts[1]) {
+      let timePart = parts[1].split(':');
+      hh = parseInt(timePart[0] || 0, 10);
+      mm = parseInt(timePart[1] || 0, 10);
+      ss = parseInt(timePart[2] || 0, 10);
+    }
+    
     // p[0]=Tanggal, p[1]=Bulan, p[2]=Tahun
-    return new Date(p[2], p[1] - 1, p[0]);
+    return new Date(datePart[2], datePart[1] - 1, datePart[0], hh, mm, ss);
   }
   
   // === FIX UNTUK BULAN INDONESIA ("01, Mei, 2026") ===
@@ -3474,7 +3488,7 @@ function parseTgl(str) {
         let d = parts[0].padStart(2, '0');
         let m = angkaBulan;
         let y = parts[2];
-        // Ubah menjadi format standar ISO (YYYY-MM-DD) agar pasti berhasil
+        // Ubah menjadi format standar ISO (YYYY-MM-DD)
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
     }
