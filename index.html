@@ -1919,6 +1919,79 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
   line-height: 1;  /* Mencegah emoji tergeser naik/turun */
 }
 
+/* --- CUSTOM DATERANGE PICKER (TEMA BIRU MUDA) --- */
+.custom-daterange {
+  --dr-primary: #0ea5e9;       /* Biru Muda (Sky Blue) Solid */
+  --dr-light: #e0f2fe;         /* Biru Muda Sangat Pudar (Untuk Range Hover) */
+  --dr-border: #e2e8f0;
+  --dr-text: #334155;
+  --dr-text-muted: #94a3b8;
+  font-family: inherit;
+}
+
+.dr-btn {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; 
+  padding: 0 14px; background: #fff; border: 1px solid var(--dr-border); 
+  border-radius: 6px; color: var(--dr-text); font-size: 13px; cursor: pointer; 
+  text-align: left; transition: all 0.2s; height: 40px; box-sizing: border-box;
+}
+
+.dr-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0; 
+  background: #fff; border: 1px solid var(--dr-border); border-radius: 8px; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100;
+  flex-direction: row; overflow: hidden; white-space: nowrap;
+}
+.dr-dropdown.show { display: flex; }
+
+/* Sidebar Kiri */
+.dr-sidebar {
+  width: 220px; background: #f8fafc; border-right: 1px solid var(--dr-border);
+  padding: 8px 0; display: flex; flex-direction: column;
+}
+.dr-preset {
+  padding: 10px 16px; font-size: 13px; color: var(--dr-text); cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.dr-preset:hover { background: #e2e8f0; }
+.dr-preset.active { color: var(--dr-primary); font-weight: 600; background: var(--dr-light); }
+.dr-divider { height: 1px; background: var(--dr-border); margin: 4px 0; }
+
+/* Panel Kalender */
+.dr-calendar-panel { display: none; padding: 16px; gap: 16px; background: #fff; }
+.dr-calendar-panel.show { display: flex; } /* Tampil saat "Pilih Tanggal" di hover */
+.dr-calendar { width: 230px; }
+
+.dr-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.dr-month-label { font-size: 13px; font-weight: 600; color: var(--dr-text); }
+.dr-nav-btn { background: none; border: none; cursor: pointer; color: var(--dr-text-muted); padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;}
+.dr-nav-btn:hover { background: #f1f5f9; color: var(--dr-text); }
+
+.dr-days-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 600; color: var(--dr-text-muted); margin-bottom: 8px; }
+.dr-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; text-align: center; }
+
+/* Style Tanggal */
+.dr-day {
+  font-size: 12px; padding: 6px 0; cursor: pointer; color: var(--dr-text);
+  position: relative; transition: background 0.1s; margin: 0; box-sizing: border-box;
+}
+.dr-day.empty { cursor: default; }
+.dr-day.disabled { color: var(--dr-text-muted); cursor: not-allowed; opacity: 0.4; }
+
+/* Efek Hover Reguler */
+.dr-day:not(.empty):not(.disabled):hover { background: var(--dr-light); border-radius: 4px;}
+
+/* LOGIKA WARNA PERSIS VIDEO (TAPI BIRU MUDA) */
+.dr-day.range-start, .dr-day.range-end {
+  background: var(--dr-primary) !important; color: #fff; border-radius: 4px; font-weight: 600;
+}
+.dr-day.range-end-hover {
+  background: var(--dr-primary) !important; color: #fff; border-radius: 4px; opacity: 0.8;
+}
+.dr-day.in-range, .dr-day.hover-range {
+  background: var(--dr-light); border-radius: 0;
+}
+
 </style>
 </head>
 <body>
@@ -2224,131 +2297,103 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
 
     <!-- HALAMAN REKAPITULASI -->
     <div class="page" id="page-st-rekap">
-    <div class="card" style="padding:0; overflow:visible;">
+  <div class="card" style="padding:0; overflow:visible;">
     
-    <!-- ================= HEADER & FILTER ================= -->
     <div class="cp-sm" style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
       <div class="sec-hd" style="margin:0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
         
-        <!-- Judul -->
         <div>
           <div class="sec-ttl" style="font-size: 16px; margin: 0;">📑 Rekapitulasi Stok</div>
           <div style="font-size: 11px; color: var(--t3); margin-top: 4px; font-weight: 500;">Ringkasan dan laporan keseluruhan data stok produk</div>
         </div>
         
-        <!-- Panel Filter -->
         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
-          
-          <div class="filter-group" style="position: relative; min-width: 260px;">
-            <!-- Tombol Trigger Dropdown -->
-            <button onclick="document.getElementById('rekap-date-dropdown').classList.toggle('show-dropdown')" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; background: #fff; border: 1px solid var(--border); border-radius: 6px; color: var(--t1); font-size: 13px; cursor: pointer; text-align: left; transition: all 0.2s; height: 40px; box-sizing: border-box;">
+          <div class="filter-group custom-daterange" style="position: relative; min-width: 280px;">
+            <button id="daterange-btn" class="dr-btn">
               <span style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 14px;">📅</span> 
-                <span style="font-weight: 600;">Minggu Ini:</span> 
-                <span style="color: var(--t2);">27/07/2026 - 30/07/2026</span>
+                <span id="daterange-label" style="font-weight: 600;">Minggu Ini:</span> 
+                <span id="daterange-val" style="color: var(--t2);"></span>
               </span>
-              <svg width="16" height="16" fill="none" stroke="var(--t3)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
             </button>
 
-            <!-- Isi Dropdown Menu -->
-            <div id="rekap-date-dropdown" class="custom-date-dropdown">
-              <div class="dd-item active">
-                <span class="dd-label">Minggu Ini</span>
-                <span class="dd-val">27/07/2026 - 30/07/2026</span>
+            <div id="daterange-dropdown" class="dr-dropdown">
+              <div class="dr-sidebar">
+                <div class="dr-preset active" data-preset="Minggu Ini">Minggu Ini</div>
+                <div class="dr-preset" data-preset="Dalam bulan ini">Dalam bulan ini</div>
+                <div class="dr-preset" data-preset="Dalam 3 bulan terakhir">Dalam 3 bulan terakhir</div>
+                <div class="dr-divider"></div>
+                <div class="dr-preset" id="menu-pilih-tanggal" data-preset="Pilih Tanggal" style="display: flex; justify-content: space-between; align-items: center;">
+                  Pilih Tanggal
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                </div>
               </div>
-              <div class="dd-item">Dalam bulan ini</div>
-              <div class="dd-item">Dalam 3 bulan terakhir</div>
-              <div style="height: 1px; background: var(--border); margin: 8px 0;"></div>
-              <div class="dd-item" style="justify-content: space-between; align-items: center; display: flex;">
-                Pilih Tanggal
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+
+              <div id="calendar-panel" class="dr-calendar-panel">
+                <div class="dr-calendar">
+                  <div class="dr-cal-header">
+                    <button id="prev-month-btn" class="dr-nav-btn">❮</button>
+                    <span id="cal-label-1" class="dr-month-label">Bulan Tahun</span>
+                    <button style="visibility: hidden;" class="dr-nav-btn">❯</button>
+                  </div>
+                  <div class="dr-days-header">
+                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                  </div>
+                  <div id="cal-days-1" class="dr-days-grid"></div>
+                </div>
+
+                <div class="dr-calendar" style="border-left: 1px solid #e2e8f0; padding-left: 16px;">
+                  <div class="dr-cal-header">
+                    <button style="visibility: hidden;" class="dr-nav-btn">❮</button>
+                    <span id="cal-label-2" class="dr-month-label">Bulan Tahun</span>
+                    <button id="next-month-btn" class="dr-nav-btn">❯</button>
+                  </div>
+                  <div class="dr-days-header">
+                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                  </div>
+                  <div id="cal-days-2" class="dr-days-grid"></div>
+                </div>
               </div>
             </div>
           </div>
 
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-primary" style="height: 40px; padding: 0 20px;">Terapkan</button>
-            <button class="btn btn-glass" style="height: 40px; padding: 0 20px;">Atur Ulang</button>
+            <button id="btn-terapkan" class="btn btn-primary" style="height: 40px; padding: 0 20px;">Terapkan</button>
+            <button id="btn-reset" class="btn btn-glass" style="height: 40px; padding: 0 20px;">Atur Ulang</button>
           </div>
           
         </div>
       </div>
     </div>
 
-    <!-- ================= TABEL KONTEN (FULL WIDTH) ================= -->
     <div class="tbl-scroll">
-      <table class="premium-table">
+      <table class="premium-table" style="width: 100%;">
         <thead>
           <tr>
-            <th>NO</th>
-            <th>TYPE PRODUK</th>
-            <th>KATEGORI</th>
-            <th>TERJUAL</th>
+            <th style="text-align: center; width: 70px;">NO</th>
+            <th style="text-align: left;">TYPE PRODUK</th>
+            <th style="text-align: left;">KATEGORI</th>
+            <th style="text-align: center; width: 120px;">TERJUAL</th>
           </tr>
         </thead>
         <tbody id="st-rekap-tbody">
-          <!-- Data dari Google Sheets -->
           <tr>
             <td colspan="4" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
-              Memuat data rekapitulasi...
+              Klik "Terapkan" untuk menampilkan data rekapitulasi...
             </td>
           </tr>
         </tbody>
       </table>
     </div>
     
-    <!-- ================= PAGINASI ================= -->
-    <div class="pag" style="padding:12px 24px; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px; background-color: #fff;">
+    <div class="pag" style="padding:12px 24px; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px; background-color: #fff; display: flex; justify-content: space-between; align-items: center;">
       <span class="pag-info" id="st-rekap-pinfo">Menampilkan 0 data</span>
-      <div class="pag-btns" id="st-rekap-pbtns">
-        <!-- Tombol navigasi -->
-      </div>
+      <div class="pag-btns" id="st-rekap-pbtns" style="display: flex; gap: 6px;">
+        </div>
     </div>
 
   </div>
-  
-  <!-- CSS Khusus untuk Dropdown Filter Rekapitulasi -->
-  <style>
-    .custom-date-dropdown {
-      display: none; 
-      position: absolute;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-      margin-top: 6px;
-      z-index: 100;
-      padding: 8px 0;
-    }
-    .custom-date-dropdown.show-dropdown {
-      display: block; 
-    }
-    .dd-item {
-      padding: 10px 16px;
-      font-size: 13px;
-      color: var(--t1);
-      cursor: pointer;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .dd-item:hover {
-      background: #f8fafc;
-    }
-    .dd-item.active {
-      color: #ea580c; 
-    }
-    .dd-item.active .dd-val {
-      color: var(--t2);
-      font-size: 12px;
-      margin-left: auto;
-    }
-  </style>
-
 </div>
 
     <div class="page" id="page-st-riwayat">
@@ -3358,7 +3403,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbxw00fnf7unHsaE-I4vadXKfoMhgsMEkibRv9qclmyp3BIX8LnqAd0lxHJnuUnEZdgeUQ/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwUj5JG6krAf3Ma8dOTQCOulf_EKHlyviy73zLERHN_dvrDfegATsUAejWtAJ08bs3G5Q/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -9341,6 +9386,408 @@ function resetLbFilter() {
   renderPaLbLive(blnAngka, thnAngka);
   prosesDataChat(blnAngka, thnAngka);
 }
+
+// ==========================================
+// LOGIKA REKAPITULASI TRANSAKSI & KALENDER
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('daterange-btn');
+  const dropdown = document.getElementById('daterange-dropdown');
+  const calPanel = document.getElementById('calendar-panel');
+  const presets = document.querySelectorAll('.dr-preset');
+  
+  // Format Tanggal (DD/MM/YYYY)
+  const formatTgl = (d) => {
+    if (!d) return '';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  };
+
+  const getToday = () => {
+    const t = new Date(); 
+    t.setHours(0,0,0,0); 
+    return t;
+  };
+  const today = getToday();
+
+  // --- PERHITUNGAN PRESET ---
+  let startMinggu = new Date(today);
+  startMinggu.setDate(today.getDate() - today.getDay()); // Hari Minggu
+
+  let startBulan = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  let start3Bulan = new Date(today);
+  start3Bulan.setMonth(start3Bulan.getMonth() - 3);
+
+  const presetsData = {
+    'Minggu Ini': { start: startMinggu, end: today },
+    'Dalam bulan ini': { start: startBulan, end: today },
+    'Dalam 3 bulan terakhir': { start: start3Bulan, end: today }
+  };
+
+  // State Variabel Tanggal
+  let startDate = new Date(presetsData['Minggu Ini'].start);
+  let endDate = new Date(presetsData['Minggu Ini'].end);
+  let tempStartDate = null; 
+  let isSelecting = false;  
+  let hoverDate = null;     
+
+  // State Variabel Paginasi & Data Rekap
+  let rekapDataFull = [];
+  let currentRekapPage = 1;
+  const itemsPerPage = 15; // MKSIMAL 15 DATA PER HALAMAN
+
+  // Inisialisasi Teks Tombol Filter
+  const daterangeVal = document.getElementById('daterange-val');
+  if (daterangeVal) {
+    daterangeVal.textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+  }
+
+  // --- BUKA / TUTUP DROPDOWN ---
+  if (btn && dropdown) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!dropdown.classList.contains('show')) {
+        dropdown.classList.add('show');
+        isSelecting = false; 
+        tempStartDate = null; 
+        hoverDate = null;
+        renderAll();
+      } else {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.remove('show');
+        isSelecting = false; tempStartDate = null; hoverDate = null;
+      }
+    });
+  }
+
+  // --- INTERAKSI SIDEBAR PRESET ---
+  presets.forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      if (item.id === 'menu-pilih-tanggal') {
+        calPanel.classList.add('show');
+        renderAll();
+      } else {
+        calPanel.classList.remove('show');
+      }
+    });
+
+    item.addEventListener('click', () => {
+      const pName = item.getAttribute('data-preset');
+      presets.forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+
+      if (pName !== 'Pilih Tanggal') {
+        startDate = new Date(presetsData[pName].start);
+        endDate = new Date(presetsData[pName].end);
+        
+        document.getElementById('daterange-label').textContent = pName + ":";
+        document.getElementById('daterange-val').textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+        
+        dropdown.classList.remove('show');
+        isSelecting = false;
+        
+        currentMonth2 = endDate.getMonth(); 
+        currentYear2 = endDate.getFullYear();
+        updateMonths();
+      }
+    });
+  });
+
+  // --- SETUP KALENDER ---
+  const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  let currentMonth2 = today.getMonth(); 
+  let currentYear2 = today.getFullYear();
+  let currentMonth1, currentYear1;
+
+  const updateMonths = () => {
+    currentMonth1 = currentMonth2 - 1;
+    currentYear1 = currentYear2;
+    if (currentMonth1 < 0) { currentMonth1 = 11; currentYear1--; }
+  };
+  updateMonths();
+
+  // FUNGSI UPDATE WARNA KALENDER
+  const updateHighlights = () => {
+    const days = document.querySelectorAll('.dr-day:not(.empty)');
+    days.forEach(dayDiv => {
+      const time = parseInt(dayDiv.dataset.time);
+      if (!time) return;
+
+      dayDiv.classList.remove('range-start', 'range-end', 'in-range', 'hover-range', 'range-end-hover');
+
+      if (!isSelecting) {
+        if (startDate && time === startDate.getTime()) dayDiv.classList.add('range-start');
+        if (endDate && time === endDate.getTime()) dayDiv.classList.add('range-end');
+        if (startDate && endDate && time > startDate.getTime() && time < endDate.getTime()) {
+          dayDiv.classList.add('in-range');
+        }
+      } else {
+        if (tempStartDate && time === tempStartDate.getTime()) {
+          dayDiv.classList.add('range-start');
+        }
+
+        if (tempStartDate && hoverDate) {
+          const tMin = Math.min(tempStartDate.getTime(), hoverDate.getTime());
+          const tMax = Math.max(tempStartDate.getTime(), hoverDate.getTime());
+
+          if (time > tMin && time < tMax) {
+            dayDiv.classList.add('hover-range');
+          } else if (time === hoverDate.getTime() && time !== tempStartDate.getTime()) {
+            dayDiv.classList.add('range-end-hover');
+          }
+        }
+      }
+    });
+  };
+
+  // FUNGSI MEMBUAT TAMPILAN BULAN
+  const renderMonth = (month, year, containerId, labelId) => {
+    const container = document.getElementById(containerId);
+    const labelElem = document.getElementById(labelId);
+    if (!container || !labelElem) return;
+
+    labelElem.textContent = `${monthNames[month]} ${year}`;
+    container.innerHTML = '';
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'dr-day empty';
+      container.appendChild(emptyDiv);
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'dr-day';
+      dayDiv.textContent = i;
+      
+      const currDate = new Date(year, month, i);
+      currDate.setHours(0,0,0,0);
+      dayDiv.dataset.time = currDate.getTime();
+
+      if (currDate > today) dayDiv.classList.add('disabled');
+
+      if (currDate <= today) {
+        dayDiv.addEventListener('mouseenter', () => {
+          if (isSelecting) {
+            hoverDate = currDate;
+            updateHighlights(); 
+          }
+        });
+
+        dayDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          
+          if (!isSelecting) {
+            tempStartDate = currDate;
+            isSelecting = true;
+            hoverDate = currDate;
+
+            document.getElementById('daterange-label').textContent = "Pilih Tanggal:";
+            document.getElementById('daterange-val').textContent = `${formatTgl(tempStartDate)} - ...`;
+
+            presets.forEach(el => el.classList.remove('active'));
+            document.getElementById('menu-pilih-tanggal').classList.add('active');
+
+            updateHighlights();
+          } else {
+            if (currDate < tempStartDate) {
+              startDate = currDate;
+              endDate = tempStartDate;
+            } else {
+              startDate = tempStartDate;
+              endDate = currDate;
+            }
+
+            isSelecting = false;
+            tempStartDate = null;
+            hoverDate = null;
+
+            document.getElementById('daterange-label').textContent = "Pilih Tanggal:";
+            document.getElementById('daterange-val').textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+
+            updateHighlights();
+
+            setTimeout(() => {
+              dropdown.classList.remove('show');
+            }, 120);
+          }
+        });
+      }
+      container.appendChild(dayDiv);
+    }
+  };
+
+  const renderAll = () => {
+    renderMonth(currentMonth1, currentYear1, 'cal-days-1', 'cal-label-1');
+    renderMonth(currentMonth2, currentYear2, 'cal-days-2', 'cal-label-2');
+    updateHighlights();
+  };
+
+  const changeMonth = (offset) => {
+    currentMonth2 += offset;
+    if (currentMonth2 > 11) { currentMonth2 = 0; currentYear2++; }
+    if (currentMonth2 < 0) { currentMonth2 = 11; currentYear2--; }
+    updateMonths();
+    renderAll();
+  };
+
+  const prevBtn = document.getElementById('prev-month-btn');
+  const nextBtn = document.getElementById('next-month-btn');
+  if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); changeMonth(-1); };
+  if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); changeMonth(1); };
+
+  renderAll();
+
+  // ==========================================
+  // EVENT TOMBOL TERAPKAN (FETCH DATA)
+  // ==========================================
+  const btnTerapkan = document.getElementById('btn-terapkan'); 
+
+  if (btnTerapkan) {
+    btnTerapkan.addEventListener('click', () => {
+      const originalText = btnTerapkan.textContent;
+      btnTerapkan.textContent = "Memuat Data...";
+      btnTerapkan.disabled = true;
+
+      const tanggalAwal = formatTgl(startDate);   
+      const tanggalAkhir = formatTgl(endDate);    
+      
+      const urlRekap = `${CFG.apiDATA}?action=rekapTransaksi&start=${tanggalAwal}&end=${tanggalAkhir}`;
+
+      fetch(urlRekap)
+        .then(response => response.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            // PROSES SORTING A - Z DILAKUKAN DI FRONTEND (JS)
+            rekapDataFull = data.sort((a, b) => {
+              const nameA = (a.nama_produk || '').toString();
+              const nameB = (b.nama_produk || '').toString();
+              return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+          } else {
+            rekapDataFull = [];
+          }
+
+          currentRekapPage = 1; // Reset ke halaman 1
+          renderTabelRekap(currentRekapPage);
+          renderPaginasiRekap();
+        })
+        .catch(error => {
+          console.error("Gagal menarik data:", error);
+          alert("Terjadi kesalahan saat memanggil data gabungan.");
+        })
+        .finally(() => {
+          btnTerapkan.textContent = originalText;
+          btnTerapkan.disabled = false;
+        });
+    });
+  }
+
+  // ==========================================
+  // FUNGSI RENDER TABEL (MAX 15 DATA & ALIGNMENT RAPI)
+  // ==========================================
+  function renderTabelRekap(page = 1) {
+    const tableBody = document.getElementById('st-rekap-tbody'); 
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = ''; 
+    
+    if (!Array.isArray(rekapDataFull) || rekapDataFull.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px; color: var(--t3);">Data Tidak Ditemukan</td></tr>';
+      return;
+    }
+
+    // Potong Data untuk Paginasi (15 per halaman)
+    const startIdx = (page - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageData = rekapDataFull.slice(startIdx, endIdx);
+
+    pageData.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align: center; font-weight: 500;">${startIdx + index + 1}</td>
+        <td style="text-align: left; font-weight: 600;">${item.nama_produk || '-'}</td>
+        <td style="text-align: left; color: var(--t2);">${item.kategori || '-'}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--p1);">${item.total_unit ?? 0}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  }
+
+  // ==========================================
+  // FUNGSI RENDER NAVIGASI PAGINASI
+  // ==========================================
+  function renderPaginasiRekap() {
+    const pInfo = document.getElementById('st-rekap-pinfo');
+    const pBtns = document.getElementById('st-rekap-pbtns');
+    if (!pBtns) return;
+
+    const totalData = rekapDataFull.length;
+    const totalPages = Math.ceil(totalData / itemsPerPage) || 1;
+
+    const startIdx = totalData === 0 ? 0 : (currentRekapPage - 1) * itemsPerPage + 1;
+    const endIdx = Math.min(currentRekapPage * itemsPerPage, totalData);
+
+    if (pInfo) {
+      pInfo.textContent = `Menampilkan ${startIdx} - ${endIdx} dari ${totalData} data`;
+    }
+
+    pBtns.innerHTML = '';
+
+    // Tombol Prev
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn-pag';
+    prevBtn.textContent = '❮ Prev';
+    prevBtn.disabled = currentRekapPage === 1;
+    prevBtn.onclick = () => {
+      if (currentRekapPage > 1) {
+        currentRekapPage--;
+        renderTabelRekap(currentRekapPage);
+        renderPaginasiRekap();
+      }
+    };
+    pBtns.appendChild(prevBtn);
+
+    // Tombol Angka Halaman
+    for (let i = 1; i <= totalPages; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `btn-pag ${i === currentRekapPage ? 'active' : ''}`;
+      pageBtn.textContent = i;
+      pageBtn.style.padding = "4px 10px";
+      pageBtn.style.cursor = "pointer";
+      pageBtn.onclick = () => {
+        currentRekapPage = i;
+        renderTabelRekap(currentRekapPage);
+        renderPaginasiRekap();
+      };
+      pBtns.appendChild(pageBtn);
+    }
+
+    // Tombol Next
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn-pag';
+    nextBtn.textContent = 'Next ❯';
+    nextBtn.disabled = currentRekapPage === totalPages || totalPages === 0;
+    nextBtn.onclick = () => {
+      if (currentRekapPage < totalPages) {
+        currentRekapPage++;
+        renderTabelRekap(currentRekapPage);
+        renderPaginasiRekap();
+      }
+    };
+    pBtns.appendChild(nextBtn);
+  }
+});
 
 </script>
 </body>
