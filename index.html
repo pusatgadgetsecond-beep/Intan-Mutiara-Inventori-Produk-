@@ -3403,7 +3403,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbwUj5JG6krAf3Ma8dOTQCOulf_EKHlyviy73zLERHN_dvrDfegATsUAejWtAJ08bs3G5Q/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwnuuaxCVSU1wX9Eq-C-Ep0JgkBH9ANrqCkrtHiA5So6-HXQoAHZTSqOLw_m7nMN-Rabw/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -9436,7 +9436,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // State Variabel Paginasi & Data Rekap
   let rekapDataFull = [];
   let currentRekapPage = 1;
-  const itemsPerPage = 15; // MKSIMAL 15 DATA PER HALAMAN
+  const itemsPerPage = 15; // MAKSIMAL 15 DATA PER HALAMAN
 
   // Inisialisasi Teks Tombol Filter
   const daterangeVal = document.getElementById('daterange-val');
@@ -9649,6 +9649,62 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAll();
 
   // ==========================================
+  // FUNGSI NORMALISASI & MATCHING DATA (AKURAT RAM/ROM)
+  // ==========================================
+  const normalizeText = (text) => {
+    if (!text) return "";
+    let str = text.toString().toLowerCase();
+    
+    // Hapus kata sekunder yang tidak esensial
+    const hapusKata = ['ram', 'rom', 'gb', 'tb', 'warna', 'bh', 'black', 'white', 'blue', 'grey', 'green', 'second', 'mulus', 'resmi', 'new'];
+    hapusKata.forEach(kata => {
+      const regex = new RegExp(`\\b${kata}\\b`, 'gi');
+      str = str.replace(regex, '');
+    });
+
+    // PENTING: Dihapus bagian kode (str.replace(/\b\d{1,2}\/\d{2,3}[a-z]*\b/g, '');) 
+    // agar angka memori (seperti 8/256) tetap ada.
+
+    // Hapus semua karakter kecuali huruf dan angka (5 dan g akan aman)
+    // Karakter garis miring '/' juga akan dihapus sehingga '6/128' menjadi '6128'
+    str = str.replace(/[^a-z0-9]/g, '');
+    
+    return str;
+  };
+
+  const prosesRekapData = (masterStock, dataTransaksi) => {
+    return masterStock.map(master => {
+      const namaProduk = master.nama_produk || ''; 
+      const kategori = master.kategori || '';      
+      
+      const masterKey = normalizeText(kategori + namaProduk);
+      const isMaster5G = masterKey.includes('5g');
+
+      const transaksiCocok = dataTransaksi.filter(trx => {
+        const trxKey = normalizeText((trx.kategori || '') + (trx.nama_produk || ''));
+        const isTrx5G = trxKey.includes('5g');
+
+        // Filter ketat: Varian 5G dan 4G tidak boleh saling bentrok
+        if (isMaster5G !== isTrx5G) return false;
+
+        // Cek irisan string yang kini SUDAH TERMASUK angka memori
+        return masterKey.includes(trxKey) || trxKey.includes(masterKey);
+      });
+
+      // Kalkulasi unit
+      const totalUnitTerjual = transaksiCocok.reduce((sum, item) => {
+        return sum + (parseInt(item.unit) || 0);
+      }, 0);
+
+      return {
+        nama_produk: namaProduk,
+        kategori: kategori,
+        total_unit: totalUnitTerjual
+      };
+    });
+  };
+
+  // ==========================================
   // EVENT TOMBOL TERAPKAN (FETCH DATA)
   // ==========================================
   const btnTerapkan = document.getElementById('btn-terapkan'); 
@@ -9667,9 +9723,17 @@ document.addEventListener('DOMContentLoaded', () => {
       fetch(urlRekap)
         .then(response => response.json())
         .then(data => {
-          if (Array.isArray(data)) {
-            // PROSES SORTING A - Z DILAKUKAN DI FRONTEND (JS)
-            rekapDataFull = data.sort((a, b) => {
+          
+          // Tangkap 2 object dari backend (Master & Transaksi)
+          const masterStok = data.master_stok || [];
+          const dataTransaksi = data.transaksi || [];
+
+          if (masterStok.length > 0) {
+            // Proses gabungkan dan kalkulasi (produk tak laku jadi 0)
+            const hasilRekap = prosesRekapData(masterStok, dataTransaksi);
+
+            // Sorting A - Z berdasarkan Nama Produk (Frontend Sorting)
+            rekapDataFull = hasilRekap.sort((a, b) => {
               const nameA = (a.nama_produk || '').toString();
               const nameB = (b.nama_produk || '').toString();
               return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
@@ -9684,7 +9748,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(error => {
           console.error("Gagal menarik data:", error);
-          alert("Terjadi kesalahan saat memanggil data gabungan.");
+          alert("Terjadi kesalahan saat memproses data gabungan.");
         })
         .finally(() => {
           btnTerapkan.textContent = originalText;
@@ -9707,7 +9771,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Potong Data untuk Paginasi (15 per halaman)
     const startIdx = (page - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
     const pageData = rekapDataFull.slice(startIdx, endIdx);
@@ -9725,7 +9788,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // FUNGSI RENDER NAVIGASI PAGINASI
+  // FUNGSI RENDER NAVIGASI PAGINASI (DIPERBARUI)
   // ==========================================
   function renderPaginasiRekap() {
     const pInfo = document.getElementById('st-rekap-pinfo');
@@ -9744,10 +9807,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     pBtns.innerHTML = '';
 
-    // Tombol Prev
+    // --- 1. SIMPAN GAYA CSS TEMA KE DALAM VARIABEL ---
+    // Gaya ini disamakan persis dengan inline CSS pada HTML awal Anda
+    const styleBiasa = "padding: 4px 10px; cursor: pointer; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: inherit; font-family: inherit; font-size: 13px;";
+    const styleAktif = "padding: 4px 10px; cursor: pointer; border: 1px solid var(--primary, #0ea5e9); border-radius: 4px; background: var(--primary, #0ea5e9); color: #fff; font-family: inherit; font-weight: 600; font-size: 13px;";
+
+    // --- 2. TOMBOL PREV (SEBELUMNYA) ---
     const prevBtn = document.createElement('button');
     prevBtn.className = 'btn-pag';
-    prevBtn.textContent = '❮ Prev';
+    prevBtn.innerHTML = '&laquo;'; // Menggunakan icon panah seperti di HTML
+    prevBtn.style.cssText = styleBiasa;
+    if (currentRekapPage === 1) {
+        prevBtn.style.opacity = "0.5";
+        prevBtn.style.cursor = "not-allowed";
+    }
     prevBtn.disabled = currentRekapPage === 1;
     prevBtn.onclick = () => {
       if (currentRekapPage > 1) {
@@ -9758,25 +9831,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     pBtns.appendChild(prevBtn);
 
-    // Tombol Angka Halaman
+    // --- 3. TOMBOL ANGKA (HALAMAN) DENGAN LOGIKA PEMOTONGAN ---
     for (let i = 1; i <= totalPages; i++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.className = `btn-pag ${i === currentRekapPage ? 'active' : ''}`;
-      pageBtn.textContent = i;
-      pageBtn.style.padding = "4px 10px";
-      pageBtn.style.cursor = "pointer";
-      pageBtn.onclick = () => {
-        currentRekapPage = i;
-        renderTabelRekap(currentRekapPage);
-        renderPaginasiRekap();
-      };
-      pBtns.appendChild(pageBtn);
+      // Logika agar tidak semua angka dicetak jika halaman sangat banyak (misal: 1 2 3 ... 15)
+      if (i === 1 || i === totalPages || (i >= currentRekapPage - 1 && i <= currentRekapPage + 1)) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `btn-pag ${i === currentRekapPage ? 'active' : ''}`;
+          pageBtn.textContent = i;
+          
+          // Terapkan gaya sesuai status aktif atau tidak
+          pageBtn.style.cssText = (i === currentRekapPage) ? styleAktif : styleBiasa;
+          
+          pageBtn.onclick = () => {
+            currentRekapPage = i;
+            renderTabelRekap(currentRekapPage);
+            renderPaginasiRekap();
+          };
+          pBtns.appendChild(pageBtn);
+      } else if (i === currentRekapPage - 2 || i === currentRekapPage + 2) {
+          // Tambahkan titik-titik pemisah
+          const dotBtn = document.createElement('span');
+          dotBtn.textContent = '...';
+          dotBtn.style.padding = "4px 6px";
+          dotBtn.style.color = "var(--t3)";
+          dotBtn.style.fontSize = "13px";
+          pBtns.appendChild(dotBtn);
+      }
     }
 
-    // Tombol Next
+    // --- 4. TOMBOL NEXT (SELANJUTNYA) ---
     const nextBtn = document.createElement('button');
     nextBtn.className = 'btn-pag';
-    nextBtn.textContent = 'Next ❯';
+    nextBtn.innerHTML = '&raquo;'; // Menggunakan icon panah seperti di HTML
+    nextBtn.style.cssText = styleBiasa;
+    if (currentRekapPage === totalPages || totalPages === 0) {
+        nextBtn.style.opacity = "0.5";
+        nextBtn.style.cursor = "not-allowed";
+    }
     nextBtn.disabled = currentRekapPage === totalPages || totalPages === 0;
     nextBtn.onclick = () => {
       if (currentRekapPage < totalPages) {
