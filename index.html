@@ -2215,7 +2215,7 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
 
         <div style="display:flex; gap:8px; align-items:center;">
           <div class="search-wrap">
-            <input class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." oninput="stFilter();toggleSearchClear()" style="min-width:200px"/>
+            <input type="search" class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." oninput="toggleSearchClear()" onkeydown="if(event.key === 'Enter') stFilter()" style="min-width:200px">
             <button type="button" id="st-search-clear" class="search-clear-btn" onclick="clearStSearch()"> ✕ </button>
           </div>
           <button class="btn btn-primary btn-sm" onclick="stOpenAdd()">
@@ -2371,15 +2371,19 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
       <table class="premium-table" style="width: 100%;">
         <thead>
           <tr>
-            <th style="text-align: center; width: 70px;">NO</th>
-            <th style="text-align: left;">TYPE PRODUK</th>
-            <th style="text-align: left;">KATEGORI</th>
+            <th style="text-align: center; width: 60px;">NO</th>
+            <!-- Lebar dikunci agar tidak melar -->
+            <th style="text-align: left; width: 350px;">TYPE PRODUK</th>
+            <th style="text-align: center; width: 200px;">KATEGORI</th>
             <th style="text-align: center; width: 120px;">TERJUAL</th>
+            <!-- Kolom kosong penyeimbang untuk mengisi sisa ruang di kanan -->
+            <th></th> 
           </tr>
         </thead>
         <tbody id="st-rekap-tbody">
           <tr>
-            <td colspan="4" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
+            <!-- Colspan diubah menjadi 5 karena sekarang ada 5 kolom -->
+            <td colspan="5" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
               Klik "Terapkan" untuk menampilkan data rekapitulasi...
             </td>
           </tr>
@@ -9767,7 +9771,8 @@ document.addEventListener('DOMContentLoaded', () => {
     tableBody.innerHTML = ''; 
     
     if (!Array.isArray(rekapDataFull) || rekapDataFull.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 30px; color: var(--t3);">Data Tidak Ditemukan</td></tr>';
+      // UPDATE: colspan diubah jadi 5 menyesuaikan header baru
+      tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--t3);">Data Tidak Ditemukan</td></tr>';
       return;
     }
 
@@ -9780,8 +9785,10 @@ document.addEventListener('DOMContentLoaded', () => {
       tr.innerHTML = `
         <td style="text-align: center; font-weight: 500;">${startIdx + index + 1}</td>
         <td style="text-align: left; font-weight: 600;">${item.nama_produk || '-'}</td>
-        <td style="text-align: left; color: var(--t2);">${item.kategori || '-'}</td>
+        <td style="text-align: center; color: var(--t2);">${item.kategori || '-'}</td>
         <td style="text-align: center; font-weight: 700; color: var(--p1);">${item.total_unit ?? 0}</td>
+        <!-- Kolom bayangan kosong di paling kanan -->
+        <td></td>
       `;
       tableBody.appendChild(tr);
     });
