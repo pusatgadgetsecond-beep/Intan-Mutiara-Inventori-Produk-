@@ -9708,7 +9708,77 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==========================================
-  // EVENT TOMBOL TERAPKAN (FETCH DATA)
+  // FUNGSI BANTUAN NOTIFIKASI TOAST DENGAN PROGRESS BAR
+  // ==========================================
+  const showNotification = (text, duration = 3000) => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      // pointer-events: none agar wadah transparan ini tidak menghalangi klik di halaman web
+      container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    // position: relative & overflow: hidden wajib agar progress bar bisa rapi di bawah
+    toast.style.cssText = 'position: relative; background: #ffffff; color: #1e293b; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; font-family: inherit; font-size: 14px; overflow: hidden; min-width: 280px; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; pointer-events: auto;';
+    
+    const content = document.createElement('div');
+    content.style.cssText = 'padding: 12px 18px; display: flex; align-items: center; gap: 10px;';
+    // Desain icon "i" dengan kotak biru seperti di video
+    content.innerHTML = `<span style="background: var(--primary, #0ea5e9); color: white; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; border-radius: 4px; font-family: serif;">i</span> <span>${text}</span>`;
+    
+    toast.appendChild(content);
+
+    // Tambahkan progress bar warna merah JIKA duration lebih dari 0
+    let progressBar;
+    if (duration > 0) {
+      progressBar = document.createElement('div');
+      progressBar.style.cssText = `position: absolute; bottom: 0; left: 0; height: 4px; background-color: #ef4444; width: 100%; transition: width ${duration}ms linear;`;
+      toast.appendChild(progressBar);
+    }
+
+    container.appendChild(toast);
+
+    // Animasi masuk (Slide In dari Kanan) & Trigger animasi Progress Bar
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(0)';
+      
+      // Setelah toast muncul, ubah lebar progress bar jadi 0% agar menyusut perlahan
+      if (duration > 0 && progressBar) {
+        requestAnimationFrame(() => {
+          progressBar.style.width = '0%';
+        });
+      }
+    });
+
+    // Fungsi untuk menghapus toast dengan animasi
+    const removeToast = () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)'; // Slide out ke kanan
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+      }, 300);
+    };
+
+    // Auto-remove jika ada durasi
+    let timeoutId;
+    if (duration > 0) {
+      timeoutId = setTimeout(removeToast, duration);
+    }
+
+    return {
+      remove: () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        removeToast();
+      }
+    };
+  };
+
+  // ==========================================
+  // EVENT TOMBOL TERAPKAN (FETCH DATA + NOTIFIKASI)
   // ==========================================
   const btnTerapkan = document.getElementById('btn-terapkan'); 
 
@@ -9717,6 +9787,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const originalText = btnTerapkan.textContent;
       btnTerapkan.textContent = "Memuat Data...";
       btnTerapkan.disabled = true;
+
+      // 1. Munculkan notifikasi Loading
+      // Angka '0' artinya notifikasi ini TIDAK ADA progress bar dan TIDAK AKAN hilang otomatis
+      const loadingToast = showNotification("Sedang Memuat Data Mohon Ditunggu...", 0);
 
       const tanggalAwal = formatTgl(startDate);   
       const tanggalAkhir = formatTgl(endDate);    
@@ -9727,15 +9801,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
           
-          // Tangkap 2 object dari backend (Master & Transaksi)
           const masterStok = data.master_stok || [];
           const dataTransaksi = data.transaksi || [];
 
           if (masterStok.length > 0) {
-            // Proses gabungkan dan kalkulasi (produk tak laku jadi 0)
             const hasilRekap = prosesRekapData(masterStok, dataTransaksi);
 
-            // Sorting A - Z berdasarkan Nama Produk (Frontend Sorting)
             rekapDataFull = hasilRekap.sort((a, b) => {
               const nameA = (a.nama_produk || '').toString();
               const nameB = (b.nama_produk || '').toString();
@@ -9745,13 +9816,23 @@ document.addEventListener('DOMContentLoaded', () => {
             rekapDataFull = [];
           }
 
-          currentRekapPage = 1; // Reset ke halaman 1
+          currentRekapPage = 1; 
           renderTabelRekap(currentRekapPage);
           renderPaginasiRekap();
+
+          // 2. Tutup notifikasi "Memuat" 
+          loadingToast.remove();
+          
+          // 3. Munculkan notifikasi "Sukses"
+          // Tidak perlu isi angka '0', otomatis akan pakai default (3000ms/3 detik) + pakai Progress Bar
+          showNotification("Data Berhasil Di Filter"); 
+          
         })
         .catch(error => {
           console.error("Gagal menarik data:", error);
           alert("Terjadi kesalahan saat memproses data gabungan.");
+          // Jangan lupa matikan loading toast kalau gagal juga
+          loadingToast.remove();
         })
         .finally(() => {
           btnTerapkan.textContent = originalText;
