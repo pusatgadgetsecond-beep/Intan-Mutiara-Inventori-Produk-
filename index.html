@@ -274,31 +274,6 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
 @keyframes tOut { to { transform: translateX(100%); opacity: 0; } }
 
 /* ═══════════════════════════════════════════════════════════
-   RESPONSIVE LAYOUT FIXES
-═══════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
-  :root { --sb: 280px; }
-  .main { margin-left: 0 !important; width: 100vw; }
-  .page-wrap { padding: 16px; } 
-  .topbar { padding: 0 16px; }
-  .tb-mod-switch { display: none; }
-  
-  .sidebar { transform: translateX(-100%); box-shadow: 4px 0 24px rgba(0,0,0,0.1); }
-  .sidebar.mobile-open { transform: translateX(0); }
-  .sb-ov { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 999; display: none; }
-  .sb-ov.show { display: block; }
-  
-  /* Mobile Table to Card Style (No Horizontal Scroll Bleed) */
-  .tbl-scroll table, .tbl-scroll thead, .tbl-scroll tbody, .tbl-scroll th, .tbl-scroll td, .tbl-scroll tr { display: block; width: 100%; }
-  .tbl-scroll thead tr { display: none; }
-  .tbl-scroll tbody tr { border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 16px; padding: 12px; background: var(--bg2); box-shadow: var(--sh); }
-  .tbl-scroll td { border: none; border-bottom: 1px dashed var(--border); padding: 10px 0 10px 40%; text-align: right; position: relative; min-height: 40px; display: flex; justify-content: flex-end; align-items: center; }
-  .tbl-scroll td:last-child { border-bottom: none; }
-  .tbl-scroll td::before { content: attr(data-label); position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 35%; text-align: left; font-weight: 600; color: var(--t3); font-size: 12px; }
-  .st-modal-box, #page-st-add .card, .mp-modal-container, .fs-modal-container { height: 100vh; max-height: 100vh; border-radius: 0; }
-}
-
-/* ═══════════════════════════════════════════════════════════
    TAHAP 4: TABEL (Rapi, Sejajar, & Responsive)
    Fokus: Menghilangkan border ganda & merapikan tombol aksi
 ═══════════════════════════════════════════════════════════ */
@@ -591,68 +566,7 @@ table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
 }
 .mp-btn-konfirmasi:hover { background: var(--c2); transform: translateY(-1px); box-shadow: 0 4px 6px var(--c4); }
 
-/* 8. RESPONSIVE MOBILE SINKRONISASI */
-@media (max-width: 768px) {
-  .mp-modal-container { height: 100vh; max-height: 100vh; border-radius: 0; max-width: 100%; border: none; }
-  .mp-modal-title-area { gap: 16px; flex-direction: column; align-items: flex-start; }
-  .mp-modal-tabs { width: 100%; overflow-x: auto; padding-bottom: 2px; }
-  .mp-filter-wrapper { flex-direction: column; align-items: stretch; }
-  .mp-filter-left { flex-direction: column; align-items: stretch; }
-  .mp-search-group { width: 100%; }
-  .mp-search-group .mp-input { flex: 1; min-width: 0; }
-  .mp-table th:nth-child(3) { width: 110px; }
-  .mp-pagination { flex-direction: column; gap: 12px; align-items: center; }
-  .mp-modal-footer { flex-direction: column; gap: 16px; }
-  .mp-footer-right { width: 100%; display: flex; }
-  .mp-btn-batal, .mp-btn-konfirmasi { flex: 1; text-align: center; justify-content: center; }
-}
 
-/* ═══════════════════════════════════════════════════════════
-   TAHAP 7: RESPONSIVE (Desktop to Mobile)
-   Fokus: Menghapus horizontal scroll, menyesuaikan layout
-═══════════════════════════════════════════════════════════ */
-
-/* Untuk HP (Screen di bawah 768px) */
-@media (max-width: 768px) {
-  .page-wrap { padding: 16px; }
-  
-  /* Membuat tabel menjadi kartu di HP */
-  .premium-table thead { display: none; }
-  .premium-table, .premium-table tbody, .premium-table tr, .premium-table td {
-    display: block;
-    width: 100%;
-  }
-  
-  .premium-table tr {
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--bg2);
-  }
-  
-  .premium-table td {
-    border: none;
-    padding: 8px 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .premium-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: var(--t3);
-    font-size: 12px;
-  }
-  
-  /* Modal jadi fullscreen di HP */
-  .modal-container {
-    max-height: 100vh;
-    height: 100vh;
-    border-radius: 0;
-  }
-}
 /* ===========================
    Search Input + Clear Button
 =========================== */
@@ -840,11 +754,305 @@ table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
     padding: 0 !important;
     border: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   [FINAL PRO FIX] RESPONSIVE MOBILE (SCROLL HORIZONTAL MURNI)
+   Solusi: Anti tumpang-tindih, sinkron saat di-scroll, ukuran pas!
+═══════════════════════════════════════════════════════════ */
+
+/* ─── TABLET FIX ─── */
+@media (max-width: 1024px) {
+  :root { --sb: 280px; }
+  .main { margin-left: 0 !important; width: 100vw; }
+  .page-wrap { padding: 20px; } 
+  .topbar { padding: 0 20px; }
+  .tb-mod-switch { display: none; }
+  
+  .sidebar { transform: translateX(-100%); box-shadow: 4px 0 24px rgba(0,0,0,0.1); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sb-ov { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 999; display: none; }
+  .sb-ov.show { display: block; }
+}
+
+/* ─── MOBILE HP FIX (Semua Fitur) ─── */
 @media (max-width: 768px) {
-    .premium-table td.empty-state-cell {
-        display: block !important;
-        width: 100% !important;
-    }
+  .page-wrap { padding: 16px; }
+
+  /* 1. RESET STRUKTUR TABEL (Mencegah Overlap/Tumpang Tindih di Video) */
+  table.premium-table, .tbl, .lb-table, .fs-session-table {
+      display: table !important; /* Kembalikan ke sifat asli tabel */
+      width: 100% !important; /* Gunakan 100% agar pas layar, akan memanjang otomatis jika teks panjang */
+      border-collapse: collapse !important;
+      margin: 0 !important;
+      table-layout: auto !important; /* Biarkan browser mengatur lebar kolom secara otomatis */
+  }
+
+  table.premium-table thead, .tbl thead, .lb-table thead, .fs-session-table thead {
+      display: table-header-group !important;
+  }
+
+  table.premium-table tbody, .tbl tbody, .lb-table tbody, .fs-session-table tbody {
+      display: table-row-group !important;
+  }
+
+  table.premium-table tr, .tbl tr, .lb-table tr, .fs-session-table tr {
+      display: table-row !important;
+      position: static !important; /* Cegah baris melayang sendiri */
+  }
+
+  /* 2. SEL TABEL (Penyelarasan Kolom & Header) */
+  table.premium-table th, table.premium-table td,
+  .tbl th, .tbl td,
+  .lb-table th, .lb-table td,
+  .fs-session-table th, .fs-session-table td {
+      display: table-cell !important; /* Paksa menjadi sel tabel asli */
+      vertical-align: middle !important;
+      text-align: left !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 14px 16px !important;
+      white-space: nowrap !important; /* Teks memanjang ke samping, tidak terpotong ke bawah */
+      position: static !important; /* Matikan sticky/absolute yang bikin tumpang tindih */
+      background-color: var(--bg2) !important; /* Beri background agar teks tidak tembus pandang */
+  }
+
+  /* Matikan pseudo-elements (label tersembunyi yang merusak layout) */
+  table.premium-table td::before, .tbl td::before, .lb-table td::before, .fs-session-table td::before { 
+      display: none !important; 
+  }
+
+  /* 3. WADAH SCROLL HORIZONTAL (Area yang bisa digeser) */
+  .tbl-container, .table-responsive, .lb-table-container, .rekap-tbl-wrapper, 
+  .st-table-wrap, .fs-session-table-wrapper, .tbl-wrap, .revisi-table-wrap, .mp-table-container, .revisi-container {
+      display: block !important;
+      width: 100% !important; /* Wadah pas selebar layar */
+      max-width: 100vw !important;
+      overflow-x: auto !important; /* Fitur geser kanan-kiri diaktifkan di sini */
+      -webkit-overflow-scrolling: touch !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--r-lg) !important;
+      background: var(--bg2) !important;
+      margin-bottom: 20px !important;
+      padding: 0 !important;
+  }
+
+  /* 4. REKAPITULASI, DASHBOARD ADMIN, & TAMBAH PRODUK (Grid ke Bawah) */
+  .form-row, .form-grid, .rekap-grid, .stats-grid, .tgt-grid, .input-row-grid, .rekap-cards-grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 16px !important;
+  }
+  
+  .rekap-card, .tgt-card {
+      width: 100% !important;
+      box-sizing: border-box !important;
+  }
+
+  /* Perbaiki Kartu Performa agar angka rapi */
+  .tgt-row { flex-wrap: nowrap !important; align-items: center !important; }
+  .tgt-meta { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  .tgt-meta span { width: 100% !important; justify-content: space-between !important; }
+
+  /* 5. FILTER & TOMBOL (Penuhi Layar) */
+  .flt-row, .chip-row, .st-filter-row, .fs-filter-bar, .rekap-filter-wrap {
+      flex-direction: column !important; align-items: stretch !important; gap: 12px !important;
+  }
+  .flt-in, .fc, .mp-input, .mp-select, .form-control { width: 100% !important; }
+  .btn, .mp-btn-cari { width: 100% !important; justify-content: center !important; }
+
+  /* 6. SEMUA POPUP / MODAL (Layar Penuh Rapi) */
+  .st-modal-box, #page-st-add .card, .mp-modal-container, .fs-modal-container {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      max-width: 100% !important;
+      border: none !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+  }
+
+  /* Elemen Dalam Popup */
+  .mp-modal-title-area { gap: 12px !important; flex-direction: column !important; align-items: flex-start !important; }
+  .mp-modal-tabs { width: 100% !important; overflow-x: auto !important; white-space: nowrap !important; padding-bottom: 5px !important; }
+  .mp-filter-wrapper, .mp-filter-left { flex-direction: column !important; align-items: stretch !important; }
+  .mp-search-group { width: 100% !important; }
+  .mp-search-group .mp-input { flex: 1 !important; min-width: 0 !important; }
+  
+  /* Footer Popup */
+  .mp-modal-footer { flex-direction: column !important; gap: 16px !important; }
+  .mp-footer-right { width: 100% !important; display: flex !important; gap: 10px !important; }
+  .mp-btn-batal, .mp-btn-konfirmasi { flex: 1 !important; text-align: center !important; justify-content: center !important; }
+
+  /* 7. PAGINATION (Navigasi Halaman) */
+  .pag, .mp-pagination { flex-direction: column !important; gap: 16px !important; text-align: center !important; }
+  .pag-btns, .mp-pag-numbers { flex-wrap: wrap !important; justify-content: center !important; }
+}
+/* ═══════════════════════════════════════════════════════════
+   [KHUSUS MOBILE - HP] PERBAIKAN 7 FITUR UTAMA
+   Mencegah Teks Terpotong, Bertumpuk, & Layout Rusak
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── 1. INVENTORI STOK ── */
+  #page-st-add, .st-modal-box, .st-container, .st-card, [class*="st-"] {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .st-filter-row, .st-header-actions, .st-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .st-table-wrap, .st-tbl-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .st-p-name, .st-item-title {
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* ── 2. REKAPITULASI ── */
+  .rekap-grid, .rekap-cards-grid, .summary-grid, .rekap-stats {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .rekap-card, .rekap-box, .rekap-item {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 14px !important;
+  }
+  .rekap-filter-wrap {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .rekap-tbl-wrapper, .rekap-table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    display: block !important;
+  }
+
+  /* ── 3. RIWAYAT REVISI ── */
+  .revisi-container, .revisi-wrapper, .revision-log {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .revisi-table-wrap, .tbl-revisi-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .revisi-note, .revisi-desc, .revisi-text, .revisi-diff {
+    white-space: normal !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+  .premium-table td.empty-state-cell {
+    display: block !important;
+    width: 100% !important;
+    padding: 20px 10px !important;
+  }
+
+  /* ── 4. FLASH SALE ── */
+  .fs-session-wrapper, .fs-modal-container, .fs-card, .fs-session-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .fs-session-header, .fs-timer-row, .fs-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .fs-session-table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+  .fs-badge, .fs-status, .fs-time-badge {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── 5. TAMBAH PRODUK BARU ── */
+  .form-grid, .product-form-grid, .form-row, .input-row-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .img-upload-box, .dropzone, .product-img-preview, .upload-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 120px !important;
+  }
+  .form-group label, .input-group label {
+    font-size: 12px !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+  }
+
+  /* ── 6. DASHBOARD PERFORMA ADMIN ── */
+  .perf-grid, .stats-grid, .admin-perf-container, .tgt-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .tgt-card {
+    padding: 16px !important;
+  }
+  .tgt-row {
+    flex-wrap: wrap !important;
+    align-items: baseline !important;
+    gap: 8px !important;
+  }
+  .tgt-val {
+    font-size: 24px !important;
+  }
+  .tgt-pct {
+    font-size: 14px !important;
+  }
+  .tgt-meta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+  .tgt-meta span {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* ── 7. LEADERBOARD ── */
+  .lb-container, .lb-card, .lb-table-wrapper {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: auto !important;
+  }
+  .lb-table {
+    min-width: 500px !important; /* Memastikan leaderboard tetap rapi bisa digeser */
+  }
+  .lb-user-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .lb-user-name {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 130px !important;
+  }
+  .lb-rank-badge, .lb-score {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
 }
 
 /* ==========================================================================
