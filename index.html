@@ -4367,7 +4367,7 @@ function renderStStats(){
     {lbl:'Stok Habis',  val:fmt(habis),    c:'c6',ic:'🔴',sub:'Perlu restock'},
     {lbl:'Stok Menipis',val:fmt(menipis),  c:'c4',ic:'⚠️',sub:'< 5 unit'},
   ].map(s=>`<div class="card stat-card"><div class="s-lbl">${s.lbl}</div><div class="s-val ${s.c}">${s.val}</div><div class="s-sub">${s.sub}</div><div class="s-ic">${s.ic}</div></div>`).join('');
-  // Update chip counts
+  
   $('cnt-semua').textContent=total;
   $('cnt-ada').textContent=ada;
   $('cnt-habis').textContent=habis;
@@ -4385,17 +4385,160 @@ function stFilter(){
   if(f==='habis')    r=r.filter(d=>gs(d)===0);
   if(f==='menipis')  r=r.filter(d=>{ const s=gs(d); return s>0&&s<5; });
   if(f==='no-harga') r=r.filter(d=>!String(d['Harga Jual Saat Ini']||'').replace(/\D/g,''));
-  // --- KODE BARU: Sorting default abjad A-Z berdasarkan Nama Produk ---
+  
   r.sort((a, b) => {
     const namaA = String(a['Nama Produk'] || '').toLowerCase();
     const namaB = String(b['Nama Produk'] || '').toLowerCase();
     return namaA.localeCompare(namaB);
   });
-  // --------------------------------------------------------------------
+  
   S.st.filtered=r; S.st.page=1; renderStTableBody();
 }
  
 function renderStTable(){ S.st.filtered=[...S.st.data]; S.st.page=1; stFilter(); }
+
+/* ═══════════════════════════════════════════════════════════
+   FUNGSI INLINE HARGA TERBARU (AUTO-REVERT JIKA TANPA UPDATE)
+═══════════════════════════════════════════════════════════ */
+// Helper khusus pembersih angka (anti minus/huruf)
+window.formatNominal = function(value) {
+    if (!value) return '';
+    const cleanVal = String(value).replace(/\D/g, ''); // \D membuang SELAIN 0-9
+    if (!cleanVal) return '';
+    return cleanVal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+window.formatRupiahLive = function(el) {
+    let rawVal = el.value.replace(/\D/g, '');
+    if (!rawVal) {
+        el.value = '';
+        return;
+    }
+    el.value = 'Rp ' + window.formatNominal(rawVal);
+};
+
+window.fokusHarga = function(el) {
+    el.style.borderColor = '#3b82f6'; 
+    el.style.background = '#eff6ff'; 
+    
+    // Tampilkan murni angkanya saja saat diklik (ambil dari data-saved)
+    let savedVal = el.dataset.saved || '';
+    el.value = savedVal; 
+};
+
+window.blurHarga = function(el) {
+    setTimeout(() => {
+        // Jika sedang proses update via tombol, jangan batalkan
+        if (el.dataset.updating === 'true') return;
+        
+        // AUTO-REVERT (Kembalikan ke data yang tersimpan sebelumnya)
+        let savedVal = el.dataset.saved || '';
+        if (!savedVal) {
+            el.value = '—';
+        } else {
+            el.value = 'Rp ' + window.formatNominal(savedVal);
+        }
+        
+        el.style.borderColor = '#cbd5e1'; 
+        el.style.background = '#f8fafc';
+    }, 200); 
+};
+
+window.simpanHargaInline = async function(id) {
+    const inputEl = document.getElementById(`in-hb-${id}`);
+    const btnEl = document.getElementById(`btn-update-${id}`);
+    const hpLabel = document.getElementById(`lbl-hp-${id}`); // Elemen teks Harga Jual
+    
+    if (!inputEl) return;
+    inputEl.dataset.updating = 'true';
+    
+    // Ambil angka murni yang baru diketik
+    const hargaBaruRaw = inputEl.value.replace(/\D/g, '');
+    const idx = S.st.data.findIndex(x => String(x['Id Produk']) === String(id));
+    
+    if (idx === -1) {
+        toast('❌ Produk tidak ditemukan!', 'warn');
+        inputEl.dataset.updating = 'false';
+        return;
+    }
+    
+    let oldText = btnEl ? btnEl.innerHTML : 'Update';
+    if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '⏳...';
+    }
+
+    try {
+        const r = await fetch(CFG.apiDATA, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'update',
+                sheet: CFG.sheetStock,
+                keyCol: 'Id Produk',
+                keyVal: id,
+                data: { 
+                    'Harga Jual Saat Ini': hargaBaruRaw,
+                    'Harga Terbaru': hargaBaruRaw 
+                }
+            })
+        });
+        
+        const res = await r.json();
+        if (res.error) throw new Error(res.error);
+
+        // Update Memori Lokal
+        S.st.data[idx]['Harga Jual Saat Ini'] = hargaBaruRaw;
+        S.st.data[idx]['Harga Terbaru'] = hargaBaruRaw;
+        
+        // PERBARUI data-saved AGAR REVERT TIDAK KEMBALI KE HARGA LAMA LAGI
+        inputEl.dataset.saved = hargaBaruRaw;
+        
+        if (hpLabel) {
+            hpLabel.textContent = hargaBaruRaw ? ('Rp ' + window.formatNominal(hargaBaruRaw)) : '—';
+        }
+
+        if (typeof renderStStats === 'function') renderStStats();
+        
+        if (btnEl) {
+            btnEl.style.background = '#10b981'; 
+            btnEl.innerHTML = '✅ OK';
+            setTimeout(() => {
+                btnEl.style.background = '#3b82f6';
+                btnEl.innerHTML = oldText;
+                btnEl.disabled = false;
+            }, 1800);
+        }
+        
+        toast('✨ Harga Jual & Harga Terbaru diperbarui!', 'ok');
+        
+        if(hargaBaruRaw) {
+            inputEl.value = 'Rp ' + window.formatNominal(hargaBaruRaw);
+        } else {
+            inputEl.value = '—';
+        }
+
+    } catch (err) {
+        console.error('Gagal update harga:', err);
+        toast('❌ Gagal menyimpan ke Spreadsheet!', 'err');
+        
+        // Jika gagal simpan, kembalikan tampilan ke harga awal
+        let savedVal = inputEl.dataset.saved || '';
+        inputEl.value = savedVal ? ('Rp ' + window.formatNominal(savedVal)) : '—';
+
+        if (btnEl) {
+            btnEl.style.background = '#ef4444'; 
+            btnEl.innerHTML = 'Gagal';
+            setTimeout(() => {
+                btnEl.style.background = '#3b82f6';
+                btnEl.innerHTML = oldText;
+                btnEl.disabled = false;
+            }, 1800);
+        }
+    } finally {
+        inputEl.dataset.updating = 'false';
+    }
+};
+/* ═══════════════════════════════════════════════════════════ */
  
 function renderStTableBody(){
   const arr=S.st.filtered, rpp=S.st.rpp, pg=S.st.page;
@@ -4403,59 +4546,80 @@ function renderStTableBody(){
   if(pg>totalPg) S.st.page=totalPg;
   const s=(S.st.page-1)*rpp, slice=arr.slice(s,s+rpp);
   const tb=$('st-tbody'); if(!tb) return;
- 
+
   $('st-load').style.display='none'; $('st-empty').style.display=slice.length?'none':'block';
+  
   if(!slice.length){ tb.innerHTML=''; }
   else {
     tb.innerHTML=slice.map(item=>{
       const sOld=parseInt(item['Stok Lama'])||0, sNew=parseInt(item['Stok Baru'])||0;
       const qc=sNew===0?'b-mis':sNew<5?'b-pro':'b-ach';
       const id=esc(item['Id Produk']||''), nm=esc(item['Nama Produk']||''), vr=esc(item['Nama Variasi']||'');
-      const hp=esc(item['Harga Jual Saat Ini']||''), hb=esc(item['Harga Terbaru']||'');
+      
+      const hp=item['Harga Jual Saat Ini']||'';
+      const hb=item['Harga Terbaru']||'';
+
+      const displayHp = hp ? fmtRp(hp) : '—';
+      
+      // Ambil angka murni membuang semua minus, koma, huruf
+      const rawHb = (hb && hb !== '0') ? String(hb).replace(/\D/g, '') : '';
+      const displayHb = rawHb ? ('Rp ' + window.formatNominal(rawHb)) : '—';
+
       return `<tr>
         <td data-label="ID Produk" style="font-family:var(--mono);font-size:10.5px">${id}</td>
         <td data-label="Nama Produk"><div style="font-weight:700;font-size:12.5px">${nm}</div></td>
         <td data-label="Variasi" style="font-size:11px;color:var(--t2)">${vr||'—'}</td>
         <td data-label="Stok Lama" class="num">${sOld}</td>
         <td data-label="Stok Baru"><span class="badge ${qc}">${sNew}</span></td>
-        <td data-label="Harga Jual" class="num" style="font-size:11px">${fmtRp(item['Harga Jual Saat Ini'])}</td>
-        <td data-label="Harga Terbaru" class="num" style="font-size:11px">${fmtRp(item['Harga Terbaru'])}</td>
+        
+        <td data-label="Harga Jual" class="num" style="font-size:11px" id="lbl-hp-${id}">${displayHp}</td>
+        
+        <!-- INPUT HARGA TERBARU (OTOMATIS Rp 1.111.111 SAAT DIKETIK) -->
+        <td data-label="Harga Terbaru" class="num" style="font-size:11px">
+          <input type="text" 
+                 id="in-hb-${id}"
+                 data-original="${rawHb}"
+                 value="${displayHb}"
+                 placeholder="—"
+                 onfocus="fokusHarga(this)"
+                 oninput="formatRupiahLive(this)"
+                 onblur="blurHarga(this, '${id}')"
+                 style="width: 130px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; color: #0284c7; font-weight: 700; outline: none; background: #f8fafc; transition: 0.2s; text-align: left;"
+          >
+        </td>
+
+        <!-- KOLOM AKSI: HANYA TOMBOL UPDATE -->
         <td data-label="Aksi">
-          <div style="display:flex;gap:5px;justify-content:flex-end;width:100%">
-            <button class="btn btn-glass btn-sm" onclick="panggilStEdit(this)" data-id="${id}" data-nm="${nm}" data-vr="${vr}" data-sl="${sOld}" data-sb="${sNew}" data-hp="${hp}" data-hb="${hb}">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="stDelete('${id}','${nm}')">🗑️</button>
-          </div>
+          <button class="btn btn-primary btn-sm" 
+                  id="btn-update-${id}" 
+                  onclick="simpanHargaInline('${id}')" 
+                  style="background: #3b82f6; border-radius:6px; padding:6px 14px; font-weight:600; width:100%;">
+            Update
+          </button>
         </td>
       </tr>`;
     }).join('');
   }
+
   $('st-pinfo').textContent=`${total} produk · Hal ${S.st.page}/${totalPg}`;
   renderPag('st-pbtns', S.st.page, totalPg, p=>{ S.st.page=p; renderStTableBody(); });
 }
  
 /* ST FORM */
 window.stOpenAdd = function(){ 
-  stReset();          // 1. Bersihkan semua sisa form dari aksi edit sebelumnya
-  showPage('st-add'); // 2. Tampilkan modal pop-up
-  stGenId();          // 3. Buat ID produk baru secara otomatis
+  stReset();          
+  showPage('st-add'); 
+  stGenId();          
 };
  
 async function stGenId(){
-
-  // JANGAN generate ID saat mode edit
   if(S.st.editId) return;
-
   try{
-
     const res = await fetch(CFG.apiST + '?action=getId');
     const data = await res.json();
-
     $('st-id').value = data.id;
-
   }catch(err){
-
     $('st-id').value = 'HP' + Date.now().toString().slice(-5);
-
   }
 }
  
@@ -4486,17 +4650,14 @@ window.stSubmit = async function(){
   }
 
   const isEdit = !!S.st.editId;
-  // ⚠️ PENTING: Simpan ID sekarang agar tidak hilang saat form di-reset oleh stReset()
   const editId = S.st.editId; 
   const btn = $('st-submit-btn');
 
-  // 1. Tampilkan status loading di tombol dan disable klik ganda
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="btn-spinner"></span> Memproses...';
   }
 
-  // 2. Tutup Modal Popup Form langsung
   closeStModal();
 
   // ════════════════════════════════════════════════════════════════
@@ -4511,7 +4672,6 @@ window.stSubmit = async function(){
     S.st.data.unshift(payload);
   }
 
-  // Render tabel, statistik, dan reset form detik ini juga (0 detik)
   renderStTable();
   renderStStats();
   stReset();
@@ -4520,7 +4680,6 @@ window.stSubmit = async function(){
 
   try {
     let res;
-    // 3. Update data pada Sheet Stok via POST (Menggunakan variabel editId yang aman)
     if (isEdit) {
       const r = await fetch(CFG.apiDATA, {
         method: 'POST', 
@@ -4537,17 +4696,14 @@ window.stSubmit = async function(){
 
     if (res.error) throw new Error(res.error);
 
-    // 4. Reload data Inventori dan Riwayat Revisi dari Spreadsheet secara Paralel (100% Asli Kode Anda)
     const [stRes, rwRes] = await Promise.all([
       apiGet(CFG.apiDATA, CFG.sheetStock),
       apiGet(CFG.apiDATA, CFG.sheetRiwayat)
     ]);
 
-    // Perbarui state lokal dengan data resmi dari Sheet yang sudah tersimpan
     if(Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
     if(Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse(); else S.st.riwayat = [];
 
-    // Render ulang UI agar ID permanen dari Sheet tersinkronisasi
     renderStTable();
     renderStStats();
     if (typeof renderStRiwayat === 'function') {
@@ -4558,7 +4714,6 @@ window.stSubmit = async function(){
     toast('❌ Gagal menyimpan ke Sheet. Silakan coba kembali.', 'err');
     console.error(err);
   } finally {
-    // Kembalikan kondisi tombol normal
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = isEdit ? '💾 Update Produk' : '💾 Simpan Produk';
@@ -4574,7 +4729,6 @@ window.stReset = function(){
   $('st-harga').readOnly = false;
   $('st-form-title').textContent='➕ Tambah Produk Baru';
   $('st-submit-btn').textContent='💾 Simpan Produk';
-  // Buka kembali field
   $('st-nama').readOnly = false;
   $('st-var').readOnly = false;
   $('st-sl').readOnly = false;
@@ -4582,15 +4736,11 @@ window.stReset = function(){
 };
  
 window.stEdit = function(id,nm,vr,sl,sb,hp,hb){
-
   S.st.editId = id;
-
   showPage('st-add');
-
   $('st-form-title').textContent = '✏️ Edit Produk';
   $('st-submit-btn').textContent = '💾 Update Produk';
 
-  // Kunci field lama
   $('st-nama').readOnly = true;
   $('st-var').readOnly = true;
   $('st-sl').readOnly = true;
@@ -4599,19 +4749,13 @@ window.stEdit = function(id,nm,vr,sl,sb,hp,hb){
   $('st-id').value=id;
   $('st-nama').value=nm;
   $('st-var').value=vr==='—'?'':vr;
-
   $('st-sl').value=sl;
   $('st-sb').value='';
-
   $('st-harga').value=hp||'';
   $('st-harga2').value='';
-
 };
 
-// Fungsi aman untuk membaca data-attributes dan meneruskannya ke fungsi edit utama
 window.panggilStEdit = function(btnElement) {
-  // Mengambil data dengan aman, DOM akan otomatis menerjemahkan kembali 
-  // karakter seperti &quot; menjadi tanda kutip ganda (") secara native.
   const id = btnElement.getAttribute('data-id') || '';
   const nm = btnElement.getAttribute('data-nm') || '';
   const vr = btnElement.getAttribute('data-vr') || '';
@@ -4619,8 +4763,6 @@ window.panggilStEdit = function(btnElement) {
   const sb = btnElement.getAttribute('data-sb') || '';
   const hp = btnElement.getAttribute('data-hp') || '';
   const hb = btnElement.getAttribute('data-hb') || '';
-
-  // Teruskan data bersih tersebut ke fungsi original Anda
   stEdit(id, nm, vr, sl, sb, hp, hb);
 };
 
@@ -4628,20 +4770,15 @@ window.stDelete = async function(id,nm){
   const conf = await Swal.fire({title:'Hapus Produk?',html:`<small>${esc(nm)}</small>`,icon:'warning',showCancelButton:true,confirmButtonColor:'#F87171',cancelButtonText:'Batal',confirmButtonText:'Hapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff'});
   if(!conf.isConfirmed) return;
 
-  // ════════════════════════════════════════════════════════════════
-  // 🚀 OPTIMASI: LANGSUNG HAPUS DARI TABEL WEB TANPA LOADING
-  // ════════════════════════════════════════════════════════════════
   S.st.data = S.st.data.filter(x => String(x['Id Produk']) !== String(id));
   renderStTable();
   renderStStats();
   toast('🗑️ Produk dihapus! (Menyinkronkan ke Sheet...)', 'ok');
-  // ════════════════════════════════════════════════════════════════
 
   try {
     const res = await apiDel(CFG.apiDATA, 'Id Produk', id, CFG.sheetStock);
     if(res.error) throw new Error(res.error);
     
-    // Sinkronkan ulang riwayat dari sheet agar data tetap konsisten dengan server
     const [stRes, rwRes] = await Promise.all([
       apiGet(CFG.apiDATA, CFG.sheetStock),
       apiGet(CFG.apiDATA, CFG.sheetRiwayat)
@@ -4660,43 +4797,21 @@ window.stDelete = async function(id,nm){
    SEARCH → ENTER = TUTUP KEYBOARD + SCROLL
 ========================================== */
 document.addEventListener('DOMContentLoaded', () => {
-
   const searchInput = document.getElementById('st-search');
   if (!searchInput) return;
-
   searchInput.addEventListener('keydown', function(e){
-
     if(e.key === 'Enter'){
-
       e.preventDefault();
-
-      // Jalankan filter
       stFilter();
-
-      // Tutup keyboard Android/iPhone
       this.blur();
-
-      // Tunggu render selesai lalu scroll
       setTimeout(() => {
-
-        const firstRow =
-          document.querySelector('#st-tbody tr');
-
+        const firstRow = document.querySelector('#st-tbody tr');
         if(firstRow){
-
-          firstRow.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-
+          firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
       }, 150);
-
     }
-
   });
-
 });
  
 /* ═══════════════════════════════════════════════════════════
