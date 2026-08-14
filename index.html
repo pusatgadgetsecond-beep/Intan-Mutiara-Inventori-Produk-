@@ -4398,77 +4398,157 @@ function stFilter(){
 function renderStTable(){ S.st.filtered=[...S.st.data]; S.st.page=1; stFilter(); }
 
 /* ═══════════════════════════════════════════════════════════
-   FUNGSI INLINE HARGA TERBARU (AUTO-REVERT JIKA TANPA UPDATE)
+   FUNGSI INLINE HARGA & STOK (TOMBOL OTOMATIS ABU-ABU / AKTIF)
 ═══════════════════════════════════════════════════════════ */
-// Helper khusus pembersih angka (anti minus/huruf)
+
+// Helper pembersih angka (anti minus/huruf)
 window.formatNominal = function(value) {
     if (!value) return '';
-    const cleanVal = String(value).replace(/\D/g, ''); // \D membuang SELAIN 0-9
+    const cleanVal = String(value).replace(/\D/g, ''); 
     if (!cleanVal) return '';
     return cleanVal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
+// ---------------- FUNGSI CEK PERUBAHAN INPUT (UNTUK TOMBOL UPDATE) ----------------
+window.checkInlineChanged = function(id) {
+    const inputHb = document.getElementById(`in-hb-${id}`);
+    const inputSb = document.getElementById(`in-sb-${id}`);
+    const btnEl = document.getElementById(`btn-update-${id}`);
+    if (!inputHb || !inputSb || !btnEl) return;
+
+    const currentHbRaw = inputHb.value.replace(/\D/g, '');
+    const savedHbRaw = inputHb.dataset.saved || '';
+
+    const currentSbRaw = inputSb.value.replace(/\D/g, '');
+    const savedSbRaw = inputSb.dataset.saved || '0';
+
+    // Cek apakah ada ketikan baru yang beda dari nilai tersimpan
+    const stokChanged = (currentSbRaw !== '') && (currentSbRaw !== savedSbRaw);
+    const hargaChanged = (currentHbRaw !== '') && (currentHbRaw !== savedHbRaw);
+
+    // Jika ada salah satu yang diisi / diedit, aktifkan tombol (Biru)
+    if (stokChanged || hargaChanged) {
+        btnEl.disabled = false;
+        btnEl.style.background = '#3b82f6';
+        btnEl.style.cursor = 'pointer';
+        btnEl.style.opacity = '1';
+    } else {
+        // Jika tidak ada perubahan, jadikan Abu-abu & Disabled
+        btnEl.disabled = true;
+        btnEl.style.background = '#94a3b8';
+        btnEl.style.cursor = 'not-allowed';
+        btnEl.style.opacity = '0.6';
+    }
+};
+
+// ---------------- FUNGSI HARGA ----------------
 window.formatRupiahLive = function(el) {
     let rawVal = el.value.replace(/\D/g, '');
-    if (!rawVal) {
-        el.value = '';
-        return;
-    }
+    if (!rawVal) { el.value = ''; return; }
     el.value = 'Rp ' + window.formatNominal(rawVal);
 };
 
 window.fokusHarga = function(el) {
-    el.style.borderColor = '#3b82f6'; 
-    el.style.background = '#eff6ff'; 
-    
-    // Tampilkan murni angkanya saja saat diklik (ambil dari data-saved)
+    el.style.borderColor = '#3b82f6'; el.style.background = '#eff6ff'; 
     let savedVal = el.dataset.saved || '';
     el.value = savedVal; 
 };
 
 window.blurHarga = function(el) {
     setTimeout(() => {
-        // Jika sedang proses update via tombol, jangan batalkan
         if (el.dataset.updating === 'true') return;
-        
-        // AUTO-REVERT (Kembalikan ke data yang tersimpan sebelumnya)
         let savedVal = el.dataset.saved || '';
-        if (!savedVal) {
-            el.value = '—';
-        } else {
-            el.value = 'Rp ' + window.formatNominal(savedVal);
-        }
+        el.value = savedVal ? ('Rp ' + window.formatNominal(savedVal)) : '—';
+        el.style.borderColor = '#cbd5e1'; el.style.background = '#f8fafc';
         
-        el.style.borderColor = '#cbd5e1'; 
-        el.style.background = '#f8fafc';
+        // Cek kembali status tombol setelah auto-revert
+        const id = el.id.replace('in-hb-', '');
+        window.checkInlineChanged(id);
     }, 200); 
 };
 
-window.simpanHargaInline = async function(id) {
-    const inputEl = document.getElementById(`in-hb-${id}`);
+// ---------------- FUNGSI STOK ----------------
+window.formatStokLive = function(el) {
+    el.value = el.value.replace(/\D/g, ''); // Hanya boleh angka
+};
+
+window.fokusStok = function(el) {
+    el.style.borderColor = '#10b981'; 
+    el.style.background = '#ecfdf5'; 
+    let savedVal = el.dataset.saved || '';
+    el.value = savedVal; 
+};
+
+window.blurStok = function(el) {
+    setTimeout(() => {
+        if (el.dataset.updating === 'true') return;
+        let savedVal = el.dataset.saved || '0';
+        el.value = savedVal;
+        el.style.borderColor = '#cbd5e1'; el.style.background = '#f8fafc';
+        
+        // Cek kembali status tombol setelah auto-revert
+        const id = el.id.replace('in-sb-', '');
+        window.checkInlineChanged(id);
+    }, 200); 
+};
+
+// ---------------- FUNGSI UPDATE GABUNGAN PARSIAL ----------------
+window.simpanInline = async function(id) {
+    const inputHb = document.getElementById(`in-hb-${id}`);
+    const inputSb = document.getElementById(`in-sb-${id}`);
     const btnEl = document.getElementById(`btn-update-${id}`);
-    const hpLabel = document.getElementById(`lbl-hp-${id}`); // Elemen teks Harga Jual
+    const hpLabel = document.getElementById(`lbl-hp-${id}`); 
     
-    if (!inputEl) return;
-    inputEl.dataset.updating = 'true';
+    if (!inputHb || !inputSb || !btnEl || btnEl.disabled) return;
     
-    // Ambil angka murni yang baru diketik
-    const hargaBaruRaw = inputEl.value.replace(/\D/g, '');
+    // Lock state blur agar tidak memicu auto-revert
+    inputHb.dataset.updating = 'true';
+    inputSb.dataset.updating = 'true';
+    
+    const hargaBaruRaw = inputHb.value.replace(/\D/g, '');
+    const stokBaruRaw = inputSb.value.replace(/\D/g, '');
+    
+    const savedHb = inputHb.dataset.saved || '';
+    const savedSb = inputSb.dataset.saved || '0';
+
     const idx = S.st.data.findIndex(x => String(x['Id Produk']) === String(id));
-    
     if (idx === -1) {
         toast('❌ Produk tidak ditemukan!', 'warn');
-        inputEl.dataset.updating = 'false';
+        inputHb.dataset.updating = 'false'; inputSb.dataset.updating = 'false';
+        return;
+    }
+
+    // Deteksi bidang mana yang sebenarnya diubah
+    const isStokChanged = (stokBaruRaw !== '') && (stokBaruRaw !== savedSb);
+    const isHargaChanged = (hargaBaruRaw !== '') && (hargaBaruRaw !== savedHb);
+
+    if (!isStokChanged && !isHargaChanged) {
+        toast('⚠️ Tidak ada data yang diubah!', 'warn');
+        inputHb.dataset.updating = 'false'; inputSb.dataset.updating = 'false';
         return;
     }
     
-    let oldText = btnEl ? btnEl.innerHTML : 'Update';
-    if (btnEl) {
-        btnEl.disabled = true;
-        btnEl.innerHTML = '⏳...';
-    }
+    let oldText = btnEl.innerHTML;
+    btnEl.disabled = true;
+    btnEl.innerHTML = '⏳...';
 
     try {
+        const updateData = {};
+
+        // 1. LOGIKA UPDATE STOK (Jika Stok Baru Di-edit)
+        if (isStokChanged) {
+            const valStokBaru = parseInt(stokBaruRaw) || 0;
+            updateData['Stok Lama'] = valStokBaru; // Stok Lama disesuaikan jadi sama dengan Stok Baru
+            updateData['Stok Baru'] = valStokBaru;
+        }
+
+        // 2. LOGIKA UPDATE HARGA (Jika Harga Baru Di-edit)
+        if (isHargaChanged) {
+            updateData['Harga Jual Saat Ini'] = hargaBaruRaw;
+            updateData['Harga Terbaru'] = hargaBaruRaw;
+        }
+
+        // 3. KIRIM KE GOOGLE SHEET (Hanya kirim field yang di-update)
         const r = await fetch(CFG.apiDATA, {
             method: 'POST',
             body: JSON.stringify({
@@ -4476,70 +4556,79 @@ window.simpanHargaInline = async function(id) {
                 sheet: CFG.sheetStock,
                 keyCol: 'Id Produk',
                 keyVal: id,
-                data: { 
-                    'Harga Jual Saat Ini': hargaBaruRaw,
-                    'Harga Terbaru': hargaBaruRaw 
-                }
+                data: updateData
             })
         });
         
         const res = await r.json();
         if (res.error) throw new Error(res.error);
 
-        // Update Memori Lokal
-        S.st.data[idx]['Harga Jual Saat Ini'] = hargaBaruRaw;
-        S.st.data[idx]['Harga Terbaru'] = hargaBaruRaw;
+        // 4. UPDATE MEMORI LOKAL S.st.data
+        if (isStokChanged) {
+            S.st.data[idx]['Stok Lama'] = updateData['Stok Lama'];
+            S.st.data[idx]['Stok Baru'] = updateData['Stok Baru'];
+            inputSb.dataset.saved = updateData['Stok Baru'];
+        }
         
-        // PERBARUI data-saved AGAR REVERT TIDAK KEMBALI KE HARGA LAMA LAGI
-        inputEl.dataset.saved = hargaBaruRaw;
-        
-        if (hpLabel) {
-            hpLabel.textContent = hargaBaruRaw ? ('Rp ' + window.formatNominal(hargaBaruRaw)) : '—';
+        if (isHargaChanged) {
+            S.st.data[idx]['Harga Jual Saat Ini'] = updateData['Harga Jual Saat Ini'];
+            S.st.data[idx]['Harga Terbaru'] = updateData['Harga Terbaru'];
+            inputHb.dataset.saved = updateData['Harga Terbaru'];
+            if (hpLabel) hpLabel.textContent = 'Rp ' + window.formatNominal(hargaBaruRaw);
         }
 
         if (typeof renderStStats === 'function') renderStStats();
-        
-        if (btnEl) {
-            btnEl.style.background = '#10b981'; 
-            btnEl.innerHTML = '✅ OK';
-            setTimeout(() => {
-                btnEl.style.background = '#3b82f6';
-                btnEl.innerHTML = oldText;
-                btnEl.disabled = false;
-            }, 1800);
+
+        toast('✨ Data berhasil diperbarui!', 'ok');
+
+        // 5. RE-RENDER TABEL STOK
+        if (typeof renderStTableBody === 'function') renderStTableBody();
+
+        // ═══════════════════════════════════════════════════════════
+        // 6. MENGAMBIL DATA RIWAYAT TERBARU & RE-RENDER TABEL RIWAYAT
+        // ═══════════════════════════════════════════════════════════
+        try {
+            const rwRes = await apiGet(CFG.apiDATA, CFG.sheetRiwayat);
+            if (Array.isArray(rwRes)) {
+                S.st.riwayat = rwRes.reverse();
+            } else {
+                S.st.riwayat = [];
+            }
+            if (typeof renderStRiwayat === 'function') {
+                renderStRiwayat();
+            }
+        } catch (errRiwayat) {
+            console.error('Gagal mengambil update riwayat:', errRiwayat);
         }
-        
-        toast('✨ Harga Jual & Harga Terbaru diperbarui!', 'ok');
-        
-        if(hargaBaruRaw) {
-            inputEl.value = 'Rp ' + window.formatNominal(hargaBaruRaw);
-        } else {
-            inputEl.value = '—';
-        }
+        // ═══════════════════════════════════════════════════════════
 
     } catch (err) {
-        console.error('Gagal update harga:', err);
+        console.error('Gagal update:', err);
         toast('❌ Gagal menyimpan ke Spreadsheet!', 'err');
         
-        // Jika gagal simpan, kembalikan tampilan ke harga awal
-        let savedVal = inputEl.dataset.saved || '';
-        inputEl.value = savedVal ? ('Rp ' + window.formatNominal(savedVal)) : '—';
+        // Revert ke data saved awal jika gagal
+        let savedHbVal = inputHb.dataset.saved || '';
+        inputHb.value = savedHbVal ? ('Rp ' + window.formatNominal(savedHbVal)) : '—';
+        
+        let savedSbVal = inputSb.dataset.saved || '0';
+        inputSb.value = savedSbVal;
 
         if (btnEl) {
             btnEl.style.background = '#ef4444'; 
             btnEl.innerHTML = 'Gagal';
-            setTimeout(() => {
-                btnEl.style.background = '#3b82f6';
-                btnEl.innerHTML = oldText;
-                btnEl.disabled = false;
+            setTimeout(() => { 
+                window.checkInlineChanged(id);
+                btnEl.innerHTML = oldText; 
             }, 1800);
         }
     } finally {
-        inputEl.dataset.updating = 'false';
+        if (inputHb) inputHb.dataset.updating = 'false';
+        if (inputSb) inputSb.dataset.updating = 'false';
     }
 };
+
 /* ═══════════════════════════════════════════════════════════ */
- 
+
 function renderStTableBody(){
   const arr=S.st.filtered, rpp=S.st.rpp, pg=S.st.page;
   const total=arr.length, totalPg=Math.max(1,Math.ceil(total/rpp));
@@ -4553,15 +4642,12 @@ function renderStTableBody(){
   else {
     tb.innerHTML=slice.map(item=>{
       const sOld=parseInt(item['Stok Lama'])||0, sNew=parseInt(item['Stok Baru'])||0;
-      const qc=sNew===0?'b-mis':sNew<5?'b-pro':'b-ach';
       const id=esc(item['Id Produk']||''), nm=esc(item['Nama Produk']||''), vr=esc(item['Nama Variasi']||'');
       
       const hp=item['Harga Jual Saat Ini']||'';
       const hb=item['Harga Terbaru']||'';
 
       const displayHp = hp ? fmtRp(hp) : '—';
-      
-      // Ambil angka murni membuang semua minus, koma, huruf
       const rawHb = (hb && hb !== '0') ? String(hb).replace(/\D/g, '') : '';
       const displayHb = rawHb ? ('Rp ' + window.formatNominal(rawHb)) : '—';
 
@@ -4570,30 +4656,44 @@ function renderStTableBody(){
         <td data-label="Nama Produk"><div style="font-weight:700;font-size:12.5px">${nm}</div></td>
         <td data-label="Variasi" style="font-size:11px;color:var(--t2)">${vr||'—'}</td>
         <td data-label="Stok Lama" class="num">${sOld}</td>
-        <td data-label="Stok Baru"><span class="badge ${qc}">${sNew}</span></td>
+        
+        <!-- INPUT STOK BARU -->
+        <td data-label="Stok Baru" class="num">
+          <input type="text"
+                 id="in-sb-${id}"
+                 data-saved="${sNew}"
+                 value="${sNew}"
+                 placeholder="0"
+                 onfocus="fokusStok(this)"
+                 oninput="formatStokLive(this); checkInlineChanged('${id}')"
+                 onblur="blurStok(this)"
+                 style="width: 60px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; color: #0f766e; font-weight: 700; outline: none; background: #f8fafc; transition: 0.2s; text-align: center;"
+          >
+        </td>
         
         <td data-label="Harga Jual" class="num" style="font-size:11px" id="lbl-hp-${id}">${displayHp}</td>
         
-        <!-- INPUT HARGA TERBARU (OTOMATIS Rp 1.111.111 SAAT DIKETIK) -->
+        <!-- INPUT HARGA TERBARU -->
         <td data-label="Harga Terbaru" class="num" style="font-size:11px">
           <input type="text" 
                  id="in-hb-${id}"
-                 data-original="${rawHb}"
+                 data-saved="${rawHb}"
                  value="${displayHb}"
                  placeholder="—"
                  onfocus="fokusHarga(this)"
-                 oninput="formatRupiahLive(this)"
-                 onblur="blurHarga(this, '${id}')"
+                 oninput="formatRupiahLive(this); checkInlineChanged('${id}')"
+                 onblur="blurHarga(this)"
                  style="width: 130px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; color: #0284c7; font-weight: 700; outline: none; background: #f8fafc; transition: 0.2s; text-align: left;"
           >
         </td>
 
-        <!-- KOLOM AKSI: HANYA TOMBOL UPDATE -->
+        <!-- KOLOM AKSI: TOMBOL UPDATE (DEFAULT DISABLED / ABU-ABU) -->
         <td data-label="Aksi">
           <button class="btn btn-primary btn-sm" 
                   id="btn-update-${id}" 
-                  onclick="simpanHargaInline('${id}')" 
-                  style="background: #3b82f6; border-radius:6px; padding:6px 14px; font-weight:600; width:100%;">
+                  onclick="simpanInline('${id}')" 
+                  disabled
+                  style="background: #94a3b8; border-radius:6px; padding:6px 14px; font-weight:600; width:100%; cursor: not-allowed; opacity: 0.6; transition: 0.2s;">
             Update
           </button>
         </td>
