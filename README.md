@@ -96,7 +96,7 @@ a:hover { color: var(--c2); }
 .sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 
 .sb-logo { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-.sb-logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--c); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: #fff; }
+.sb-logo-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--c); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .sb-logo-text { font-size: 15px; font-weight: 700; color: var(--t1); line-height: 1.2; }
 .sb-logo-text small { display: block; font-size: 11px; font-weight: 500; color: var(--t3); }
 
@@ -123,7 +123,7 @@ a:hover { color: var(--c2); }
 .tb-title { font-size: 18px; font-weight: 600; color: var(--t1); }
 .tb-title small { display: block; font-size: 12px; color: var(--t3); font-weight: 400; margin-top: 2px; }
 
-.tb-r { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.tb-r { display: flex; align-items: center; gap: 12px; }
 .tb-live { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: var(--g2); color: var(--g); border: 1px solid rgba(34, 197, 94, 0.2); }
 .live-dot { width: 6px; height: 6px; background: var(--g); border-radius: 50%; animation: ldot 1.5s infinite; }
 @keyframes ldot { 0%,100%{opacity:1} 50%{opacity:0.4} }
@@ -133,11 +133,6 @@ a:hover { color: var(--c2); }
 .tb-mod-btn { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--t2); transition: var(--tx); }
 .tb-mod-btn.on { background: var(--bg2); color: var(--c); box-shadow: var(--sh); font-weight: 600; }
 #themeBtn { display: none; }
-
-/* Hamburger Menu & Overlay Background (Hidden di Desktop) */
-.tb-ham { display: none; width: 36px; height: 36px; border-radius: var(--r); border: 1px solid var(--border); background: var(--bg2); align-items: center; justify-content: center; cursor: pointer; color: var(--t2); font-size: 18px; flex-shrink: 0; }
-.sb-ov { display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 999; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease; }
-.sb-ov.show { display: block; opacity: 1; pointer-events: all; }
 
 /* ═══════════════════════════════════════════════════════════
    GLOBAL CARDS & CONTAINERS
@@ -269,186 +264,137 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
 .b-ach { background: var(--g2); color: var(--g); }
 .b-exc { background: var(--c3); color: var(--c); }
 .b-mis { background: rgba(239, 68, 68, 0.1); color: var(--r); }
+.b-pro { background: rgba(245, 158, 11, 0.1); color: var(--y); }
+.b-neu { background: var(--bg); color: var(--t3); }
+
+.toast-box { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: var(--sh-modal); font-size: 13px; font-weight: 500; color: var(--t1); animation: tIn .3s ease forwards; }
+.toast.hiding { animation: tOut .3s ease forwards; }
+@keyframes tIn { from { transform: translateX(100%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes tOut { to { transform: translateX(100%); opacity: 0; } }
 
 /* ═══════════════════════════════════════════════════════════
-   SMART RESPONSIVE (MOBILE, TABLET, LAPTOP) 
-   [DIADAPTASI AGAR RAPI DI SEMUA LAYAR]
+   TAHAP 4: TABEL (Rapi, Sejajar, & Responsive)
+   Fokus: Menghilangkan border ganda & merapikan tombol aksi
 ═══════════════════════════════════════════════════════════ */
-    /* --- 1. TABLET & LAPTOP KECIL (< 1024px) --- */
-    @media (max-width: 1024px) {
-    :root { --sb: 260px; }
-  
-    /* JURUS PAMUNGKAS: Tambahkan 'body' di depan agar menang mutlak atas kode manapun */
-    body .main, 
-    body .sidebar ~ .main, 
-    body .sidebar.closed ~ .main { 
-    margin-left: 0 !important; 
-    padding-left: 0 !important;
-    width: 100% !important; 
-    max-width: 100vw !important;
-  }
-  
-    .page-wrap { padding: 24px; } 
-    .topbar { padding: 0 24px; height: 64px; }
-    .tb-mod-switch { display: none; } 
-  
-    .tb-ham { display: flex; }
-
-    .sidebar {
-    position: fixed !important; 
-    top: 0; 
-    left: 0; 
-    height: 100vh; 
-    z-index: 10000; 
-    width: var(--sb) !important; 
-    transform: translateX(-100%); 
-    transition: transform 0.3s ease; 
-    box-shadow: var(--sh-modal); 
-  }
-  
-    .sidebar.mobile-open { 
-    transform: translateX(0) !important; 
-  }
+.tbl-container {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin-bottom: 24px;
 }
 
-    /* --- 2. MOBILE & TABLET PORTRAIT (< 768px) --- */
-    @media (max-width: 768px) {
-    .page-wrap { padding: 16px 12px; }
-  
-    /* Jadikan Grid 1 Kolom Penuh */
-    .stats-grid, .tgt-grid, .form-grid { grid-template-columns: 1fr !important; gap: 16px; }
-  
-    /* Header Bagian Atas Kartu / Tabel */
-    .sec-hd { flex-direction: column; align-items: flex-start; gap: 12px; }
-  
-    /* Pengecualian: Jangan ubah layout pada judul tabel, hanya elemen lain & tombol */
-    .sec-hd > div:not(.sec-ttl) { width: 100%; display: flex; flex-direction: column; gap: 10px; }
-    .sec-hd > .btn, .sec-hd .btn { width: 100%; justify-content: center; padding: 12px; }
-  
-    /* Mengunci Judul Tabel agar tetap menyamping (Baris) & Rata Kiri seperti PC */
-    .sec-ttl { 
-    width: 100%; 
-    display: flex !important; 
-    flex-direction: row !important; 
-    align-items: center !important; 
-    justify-content: flex-start !important; 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    font-size: 15px; 
-  }
-  
-    /* --- 3. KONDISI LAPTOP KECIL / TABLET JUMBO (1025px - 1440px) --- */
-    /* Mengubah titik potong dari 768px menjadi 1025px agar tidak bentrok dengan aturan layar di bawah 1024px */
-    @media screen and (min-width: 1025px) and (max-width: 1440px) {
-    :root { --sb: 240px; }
-    .sidebar { width: var(--sb) !important; z-index: 1000; }
-    .sb-nav { overflow-y: auto; overflow-x: hidden; padding: 10px; }
-    .main { width: calc(100% - var(--sb)) !important; margin-left: var(--sb) !important; }
-  }
-
-  /* -------------------------------------------
-     MODAL BOX / POPUP - PENYESUAIAN HP
-  ------------------------------------------- */
-  .st-modal, #page-st-add, .mp-modal-overlay, .fs-modal-overlay { padding: 16px 12px; }
-  .st-modal-box, #page-st-add .card, .mp-modal-container, .fs-modal-container { 
-    max-height: calc(100vh - 32px); 
-    margin: auto;
-  }
-  
-  /* Header Modal - Pastikan tombol X tidak terjepit */
-  .st-head-edit, .mp-modal-header, .fs-modal-header { 
-    padding: 16px; 
-    flex-direction: row !important; 
-    flex-wrap: nowrap !important; 
-    align-items: center !important; 
-    justify-content: space-between !important;
-  }
-  
-  .st-close-btn, .mp-modal-close, .fs-modal-close { 
-    position: static !important; 
-    flex-shrink: 0 !important; 
-    margin-left: 12px !important;
-    width: 36px !important;
-    height: 36px !important;
-  }
-  
-  .mp-modal-body, .fs-modal-body, #page-st-add .form-grid { padding: 16px; }
-  
-  /* Footer Modal - Tombol jadi membentang penuh */
-  .mp-modal-footer, .fs-modal-footer { padding: 16px; flex-direction: column; gap: 10px; }
-  .mp-modal-footer .btn, .fs-modal-footer .btn { width: 100%; justify-content: center; padding: 12px; }
-
-  /* -------------------------------------------
-     TABEL MODE KARTU (CARD VIEW) SUPER RAPI
-  ------------------------------------------- */
-  table { min-width: 0 !important; border: none; }
-  .tbl-scroll table, .tbl-scroll thead, .tbl-scroll tbody, .tbl-scroll th, .tbl-scroll td, .tbl-scroll tr { display: block; width: 100%; }
-  
-  /* Sembunyikan header asli tabel */
-  .tbl-scroll thead { display: none; } 
-  
-  /* Styling bungkus baris (menjadi seperti kartu) */
-  .tbl-scroll tbody tr { 
-    border: 1px solid var(--border); 
-    border-radius: var(--r-lg); 
-    margin-bottom: 16px; 
-    padding: 0; 
-    background: var(--bg2); 
-    box-shadow: var(--sh); 
-    overflow: hidden;
-  }
-  
-  /* Styling masing-masing sel (menjadi baris list) */
-  .tbl-scroll td { 
-    border: none; 
-    border-bottom: 1px dashed var(--border); 
-    padding: 14px 16px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    gap: 16px;
-    text-align: right; 
-  }
-  .tbl-scroll td:last-child { border-bottom: none; }
-  
-  /* Memanggil label dari HTML data-label */
-  .tbl-scroll td::before { 
-    content: attr(data-label); 
-    text-align: left; 
-    font-weight: 600; 
-    color: var(--t3); 
-    font-size: 12px; 
-    text-transform: uppercase; 
-    flex-shrink: 0; /* Menahan agar label tidak menyusut */
-  }
-  
-  /* Memaksa text isi tabel agar rapi dan rata kanan */
-  .tbl-scroll td > * { text-align: right; word-break: break-word; margin: 0; }
-  
-  /* Khusus kolom Aksi/Tombol */
-  .tbl-scroll td[data-label="Aksi"] { 
-    justify-content: center; 
-    background: var(--bg3); 
-    padding: 12px; 
-  }
-  .tbl-scroll td[data-label="Aksi"]::before { display: none; }
-  .tbl-scroll td[data-label="Aksi"] .btn { width: 100%; justify-content: center; }
-  
-  /* -------------------------------------------
-     PAGINATION
-  ------------------------------------------- */
-  .pag { flex-direction: column; align-items: stretch; gap: 16px; padding: 16px; }
-  .pag-info { text-align: center; }
-  .pag-btns { justify-content: center; width: 100%; flex-wrap: wrap; }
+.tbl-head {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FAFAFA;
 }
 
-/* --- 3. KONDISI TABLET LANDSCAPE JUMBO --- */
-@media screen and (min-width: 768px) and (max-width: 1440px) and (orientation: landscape) {
-  :root { --sb: 240px; }
-  .sidebar { width: var(--sb) !important; z-index: 1000 !important; }
-  .sb-nav { overflow-y: auto !important; overflow-x: hidden !important; padding: 10px !important; }
-  .main { width: calc(100vw - var(--sb)) !important; margin-left: var(--sb) !important; }
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table.premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+table.premium-table th {
+  background: var(--bg3);
+  color: var(--t3);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+table.premium-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--t2);
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+table.premium-table tr:last-child td { border-bottom: none; }
+table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
+
+/* Tombol Aksi di dalam tabel */
+.td-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  cursor: pointer;
+  transition: var(--tx);
+}
+
+.btn-icon:hover { border-color: var(--c); color: var(--c); background: var(--c3); }
+
+/* ═══════════════════════════════════════════════════════════
+   TAHAP 5: FORM INPUT (Tinggi Seragam & Label Jelas)
+   Fokus: Spasi antar input agar tidak rapat
+═══════════════════════════════════════════════════════════ */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--t1);
+}
+
+.form-control {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--bg2);
+  font-size: 14px;
+  transition: var(--tx);
+}
+
+.form-control:focus {
+  border-color: var(--c);
+  box-shadow: 0 0 0 4px var(--c3);
+  outline: none;
+}
+
+/* Penataan Grid Form */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -620,100 +566,6 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
 }
 .mp-btn-konfirmasi:hover { background: var(--c2); transform: translateY(-1px); box-shadow: 0 4px 6px var(--c4); }
 
-/* 8. RESPONSIVE MOBILE SINKRONISASI */
-@media (max-width: 768px) {
-  .mp-modal-container { height: 100vh; max-height: 100vh; border-radius: 0; max-width: 100%; border: none; }
-  .mp-modal-title-area { gap: 16px; flex-direction: column; align-items: flex-start; }
-  .mp-modal-tabs { width: 100%; overflow-x: auto; padding-bottom: 2px; }
-  .mp-filter-wrapper { flex-direction: column; align-items: stretch; }
-  .mp-filter-left { flex-direction: column; align-items: stretch; }
-  .mp-search-group { width: 100%; }
-  .mp-search-group .mp-input { flex: 1; min-width: 0; }
-  .mp-table th:nth-child(3) { width: 110px; }
-  .mp-pagination { flex-direction: column; gap: 12px; align-items: center; }
-  .mp-modal-footer { flex-direction: column; gap: 16px; }
-  .mp-footer-right { width: 100%; display: flex; }
-  .mp-btn-batal, .mp-btn-konfirmasi { flex: 1; text-align: center; justify-content: center; }
-}
-
-/* ==========================================================================
-   TAMPILAN MOBILE: CARD INVENTORI (REFERENSI GAMBAR 2)
-========================================================================== */
-@media (max-width: 768px) {
-  /* 1. Mengubah baris tabel (tr) menjadi Card putih dengan bayangan */
-  .premium-table tbody tr,
-  .tbl-scroll tbody tr {
-    display: flex;
-    flex-direction: column;
-    background: #ffffff;
-    border-radius: 16px; /* Membuat sudut melengkung */
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.05); /* Shadow halus seperti Gambar 2 */
-    border: none;
-  }
-
-  /* 2. Mengatur tata letak Label (kiri) dan Isi Data (kanan) */
-  .premium-table td, 
-  .tbl-scroll td {
-    display: flex;
-    justify-content: space-between; 
-    align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px solid #f1f5f9 !important; /* Garis pemisah halus, bukan putus-putus */
-    
-    /* Format teks isi data (Misal: "iTel Vision 1 Pro...") */
-    text-align: right; 
-    font-size: 14px;
-    font-weight: 500;
-    color: #334155; 
-    word-break: break-word; /* Mencegah teks panjang menabrak label */
-  }
-
-  /* Hilangkan garis pembatas di elemen data terakhir */
-  .premium-table td:last-child,
-  .tbl-scroll td:last-child {
-    border-bottom: none !important;
-  }
-
-  /* 3. Menyamakan gaya Label persis seperti Gambar 2 (Kapital & Abu-abu) */
-  .premium-table td::before,
-  .tbl-scroll td::before {
-    content: attr(data-label);
-    font-size: 12px;
-    font-weight: 600;
-    color: #94a3b8; /* Warna abu-abu pudar */
-    text-transform: uppercase; /* Memaksa huruf kapital (Contoh: NAMA PRODUK) */
-    letter-spacing: 0.5px;
-    text-align: left;
-    flex-shrink: 0; 
-    width: 35%; /* Mengunci ruang kiri agar tidak tergeser teks panjang */
-  }
-
-  /* 4. Memposisikan Tombol Edit & Hapus di Kanan Bawah */
-  .premium-table td[data-label="Aksi"],
-  .tbl-scroll td[data-label="Aksi"] {
-    display: flex !important;
-    justify-content: flex-end !important;
-    align-items: center;
-    padding-top: 16px; /* Memberi jarak dari data di atasnya */
-    margin-top: 4px;
-    border-bottom: none !important;
-  }
-
-  /* Menyembunyikan kata "Aksi" agar tidak menuh-menuhin tempat */
-  .premium-table td[data-label="Aksi"]::before,
-  .tbl-scroll td[data-label="Aksi"]::before {
-    display: none !important; 
-  }
-
-  /* Wrapper pelindung untuk tombol */
-  .td-actions {
-    display: flex !important;
-    gap: 10px;
-    justify-content: flex-end;
-  }
-}
 
 /* ===========================
    Search Input + Clear Button
@@ -734,25 +586,17 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
     right:12px;
     top:50%;
     transform:translateY(-50%);
-
     width:22px;
     height:22px;
-
     border:none;
     outline:none;
-
     border-radius:50%;
     background:#eef2f7;
-
     color:#64748b;
-
     font-size:13px;
     font-weight:700;
-
     cursor:pointer;
-
     display:none;
-
     transition:.2s;
 }
 
@@ -902,11 +746,318 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
     padding: 0 !important;
     border: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   [FINAL PRO FIX] RESPONSIVE MOBILE (SCROLL HORIZONTAL MURNI)
+   Solusi: Anti tumpang-tindih, sinkron saat di-scroll, ukuran pas!
+═══════════════════════════════════════════════════════════ */
+
+/* ─── TABLET FIX ─── */
+@media (max-width: 1024px) {
+  :root { --sb: 280px; }
+  .main { margin-left: 0 !important; width: 100vw; }
+  .page-wrap { padding: 20px; } 
+  .topbar { padding: 0 20px; }
+  .tb-mod-switch { display: none; }
+  
+  .sidebar { transform: translateX(-100%); box-shadow: 4px 0 24px rgba(0,0,0,0.1); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sb-ov { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 999; display: none; }
+  .sb-ov.show { display: block; }
+}
+
+/* ─── MOBILE HP FIX (Semua Fitur) ─── */
 @media (max-width: 768px) {
-    .premium-table td.empty-state-cell {
-        display: block !important;
-        width: 100% !important;
-    }
+  .page-wrap { padding: 16px; }
+
+  /* 1. RESET STRUKTUR TABEL (Mencegah Overlap/Tumpang Tindih di Video) */
+  table.premium-table, .tbl, .lb-table, .fs-session-table {
+      display: table !important; /* Kembalikan ke sifat asli tabel */
+      width: 100% !important; /* Gunakan 100% agar pas layar, akan memanjang otomatis jika teks panjang */
+      border-collapse: collapse !important;
+      margin: 0 !important;
+      table-layout: auto !important; /* Biarkan browser mengatur lebar kolom secara otomatis */
+  }
+
+  table.premium-table thead, .tbl thead, .lb-table thead, .fs-session-table thead {
+      display: table-header-group !important;
+  }
+
+  table.premium-table tbody, .tbl tbody, .lb-table tbody, .fs-session-table tbody {
+      display: table-row-group !important;
+  }
+
+  table.premium-table tr, .tbl tr, .lb-table tr, .fs-session-table tr {
+      display: table-row !important;
+      position: static !important; /* Cegah baris melayang sendiri */
+  }
+
+  /* 2. SEL TABEL (Penyelarasan Kolom & Header) */
+  table.premium-table th, table.premium-table td,
+  .tbl th, .tbl td,
+  .lb-table th, .lb-table td,
+  .fs-session-table th, .fs-session-table td {
+      display: table-cell !important; /* Paksa menjadi sel tabel asli */
+      vertical-align: middle !important;
+      text-align: left !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 14px 16px !important;
+      white-space: nowrap !important; /* Teks memanjang ke samping, tidak terpotong ke bawah */
+      position: static !important; /* Matikan sticky/absolute yang bikin tumpang tindih */
+      background-color: var(--bg2) !important; /* Beri background agar teks tidak tembus pandang */
+  }
+
+  /* Matikan pseudo-elements (label tersembunyi yang merusak layout) */
+  table.premium-table td::before, .tbl td::before, .lb-table td::before, .fs-session-table td::before { 
+      display: none !important; 
+  }
+
+  /* 3. WADAH SCROLL HORIZONTAL (Area yang bisa digeser) */
+  .tbl-container, .table-responsive, .lb-table-container, .rekap-tbl-wrapper, 
+  .st-table-wrap, .fs-session-table-wrapper, .tbl-wrap, .revisi-table-wrap, .mp-table-container, .revisi-container {
+      display: block !important;
+      width: 100% !important; /* Wadah pas selebar layar */
+      max-width: 100vw !important;
+      overflow-x: auto !important; /* Fitur geser kanan-kiri diaktifkan di sini */
+      -webkit-overflow-scrolling: touch !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--r-lg) !important;
+      background: var(--bg2) !important;
+      margin-bottom: 20px !important;
+      padding: 0 !important;
+  }
+
+  /* 4. REKAPITULASI, DASHBOARD ADMIN, & TAMBAH PRODUK (Grid ke Bawah) */
+  .form-row, .form-grid, .rekap-grid, .stats-grid, .tgt-grid, .input-row-grid, .rekap-cards-grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 16px !important;
+  }
+  
+  .rekap-card, .tgt-card {
+      width: 100% !important;
+      box-sizing: border-box !important;
+  }
+
+  /* Perbaiki Kartu Performa agar angka rapi */
+  .tgt-row { flex-wrap: nowrap !important; align-items: center !important; }
+  .tgt-meta { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  .tgt-meta span { width: 100% !important; justify-content: space-between !important; }
+
+  /* 5. FILTER & TOMBOL (Penuhi Layar) */
+  .flt-row, .chip-row, .st-filter-row, .fs-filter-bar, .rekap-filter-wrap {
+      flex-direction: column !important; align-items: stretch !important; gap: 12px !important;
+  }
+  .flt-in, .fc, .mp-input, .mp-select, .form-control { width: 100% !important; }
+  .btn, .mp-btn-cari { width: 100% !important; justify-content: center !important; }
+
+  /* 6. SEMUA POPUP / MODAL (Layar Penuh Rapi) */
+  .st-modal-box, #page-st-add .card, .mp-modal-container, .fs-modal-container {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      max-width: 100% !important;
+      border: none !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+  }
+
+  /* Elemen Dalam Popup */
+  .mp-modal-title-area { gap: 12px !important; flex-direction: column !important; align-items: flex-start !important; }
+  .mp-modal-tabs { width: 100% !important; overflow-x: auto !important; white-space: nowrap !important; padding-bottom: 5px !important; }
+  .mp-filter-wrapper, .mp-filter-left { flex-direction: column !important; align-items: stretch !important; }
+  .mp-search-group { width: 100% !important; }
+  .mp-search-group .mp-input { flex: 1 !important; min-width: 0 !important; }
+  
+  /* Footer Popup */
+  .mp-modal-footer { flex-direction: column !important; gap: 16px !important; }
+  .mp-footer-right { width: 100% !important; display: flex !important; gap: 10px !important; }
+  .mp-btn-batal, .mp-btn-konfirmasi { flex: 1 !important; text-align: center !important; justify-content: center !important; }
+
+  /* 7. PAGINATION (Navigasi Halaman) */
+  .pag, .mp-pagination { flex-direction: column !important; gap: 16px !important; text-align: center !important; }
+  .pag-btns, .mp-pag-numbers { flex-wrap: wrap !important; justify-content: center !important; }
+}
+/* ═══════════════════════════════════════════════════════════
+   [KHUSUS MOBILE - HP] PERBAIKAN 7 FITUR UTAMA
+   Mencegah Teks Terpotong, Bertumpuk, & Layout Rusak
+═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── 1. INVENTORI STOK ── */
+  #page-st-add, .st-modal-box, .st-container, .st-card, [class*="st-"] {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .st-filter-row, .st-header-actions, .st-toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .st-table-wrap, .st-tbl-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .st-p-name, .st-item-title {
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  /* ── 2. REKAPITULASI ── */
+  .rekap-grid, .rekap-cards-grid, .summary-grid, .rekap-stats {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .rekap-card, .rekap-box, .rekap-item {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 14px !important;
+  }
+  .rekap-filter-wrap {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  .rekap-tbl-wrapper, .rekap-table-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    display: block !important;
+  }
+
+  /* ── 3. RIWAYAT REVISI ── */
+  .revisi-container, .revisi-wrapper, .revision-log {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .revisi-table-wrap, .tbl-revisi-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .revisi-note, .revisi-desc, .revisi-text, .revisi-diff {
+    white-space: normal !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    max-width: 100% !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+  .premium-table td.empty-state-cell {
+    display: block !important;
+    width: 100% !important;
+    padding: 20px 10px !important;
+  }
+
+  /* ── 4. FLASH SALE ── */
+  .fs-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 8px !important;
+    margin-right: -16px;
+    padding-right: 16px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .fs-tabs::-webkit-scrollbar {
+    display: none !important; 
+  }
+  .fs-session-wrapper, .fs-modal-container, .fs-card, .fs-session-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .fs-session-header, .fs-timer-row, .fs-filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .fs-session-table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+  .fs-badge, .fs-status, .fs-time-badge {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    white-space: nowrap !important;
+  }
+
+  /* ── 5. TAMBAH PRODUK BARU ── */
+  .form-grid, .product-form-grid, .form-row, .input-row-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .img-upload-box, .dropzone, .product-img-preview, .upload-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 120px !important;
+  }
+  .form-group label, .input-group label {
+    font-size: 12px !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+  }
+
+  /* ── 6. DASHBOARD PERFORMA ADMIN ── */
+  .perf-grid, .stats-grid, .admin-perf-container, .tgt-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .tgt-card {
+    padding: 16px !important;
+  }
+  .tgt-row {
+    flex-wrap: wrap !important;
+    align-items: baseline !important;
+    gap: 8px !important;
+  }
+  .tgt-val {
+    font-size: 24px !important;
+  }
+  .tgt-pct {
+    font-size: 14px !important;
+  }
+  .tgt-meta {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+  .tgt-meta span {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  /* ── 7. LEADERBOARD ── */
+  .lb-container, .lb-card, .lb-table-wrapper {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: auto !important;
+  }
+  .lb-table {
+    min-width: 500px !important; /* Memastikan leaderboard tetap rapi bisa digeser */
+  }
+  .lb-user-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  .lb-user-name {
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 130px !important;
+  }
+  .lb-rank-badge, .lb-score {
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+
 }
 
 /* ==========================================================================
@@ -1530,6 +1681,22 @@ tbody td:first-child { color: var(--t1); font-weight: 500; }
   font-weight: 600;
 }
 
+/* ==========================================================================
+   6. TAMBAHAN KHUSUS: SCROLL TABEL DASHBOARD PERFORMA ADMIN
+   ========================================================================== */
+#page-pa-dash .card.cp {
+  min-width: 0; /* Menjaga agar kotak/layout grid tidak ikut melebar dan hancur */
+}
+
+#page-pa-dash .tbl-wrap {
+  overflow-x: auto !important; /* Membuka kunci khusus di halaman ini agar bisa digeser */
+  -webkit-overflow-scrolling: touch; /* Membuat geseran layar lebih mulus di tablet */
+}
+
+#page-pa-dash .tbl {
+  min-width: 550px !important; /* Memaksa tabel punya lebar minimum agar efek scroll muncul saat layar lebih kecil dari ukuran ini */
+}
+
 /* ==========================================================
    5. DISTRIBUSI LEBAR KOLOM (BERDASARKAN ID - 100% BULLETPROOF)
    ========================================================== */
@@ -1981,6 +2148,79 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
   line-height: 1;  /* Mencegah emoji tergeser naik/turun */
 }
 
+/* --- CUSTOM DATERANGE PICKER (TEMA BIRU MUDA) --- */
+.custom-daterange {
+  --dr-primary: #0ea5e9;       /* Biru Muda (Sky Blue) Solid */
+  --dr-light: #e0f2fe;         /* Biru Muda Sangat Pudar (Untuk Range Hover) */
+  --dr-border: #e2e8f0;
+  --dr-text: #334155;
+  --dr-text-muted: #94a3b8;
+  font-family: inherit;
+}
+
+.dr-btn {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; 
+  padding: 0 14px; background: #fff; border: 1px solid var(--dr-border); 
+  border-radius: 6px; color: var(--dr-text); font-size: 13px; cursor: pointer; 
+  text-align: left; transition: all 0.2s; height: 40px; box-sizing: border-box;
+}
+
+.dr-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0; 
+  background: #fff; border: 1px solid var(--dr-border); border-radius: 8px; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 100;
+  flex-direction: row; overflow: hidden; white-space: nowrap;
+}
+.dr-dropdown.show { display: flex; }
+
+/* Sidebar Kiri */
+.dr-sidebar {
+  width: 220px; background: #f8fafc; border-right: 1px solid var(--dr-border);
+  padding: 8px 0; display: flex; flex-direction: column;
+}
+.dr-preset {
+  padding: 10px 16px; font-size: 13px; color: var(--dr-text); cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.dr-preset:hover { background: #e2e8f0; }
+.dr-preset.active { color: var(--dr-primary); font-weight: 600; background: var(--dr-light); }
+.dr-divider { height: 1px; background: var(--dr-border); margin: 4px 0; }
+
+/* Panel Kalender */
+.dr-calendar-panel { display: none; padding: 16px; gap: 16px; background: #fff; }
+.dr-calendar-panel.show { display: flex; } /* Tampil saat "Pilih Tanggal" di hover */
+.dr-calendar { width: 230px; }
+
+.dr-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.dr-month-label { font-size: 13px; font-weight: 600; color: var(--dr-text); }
+.dr-nav-btn { background: none; border: none; cursor: pointer; color: var(--dr-text-muted); padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px;}
+.dr-nav-btn:hover { background: #f1f5f9; color: var(--dr-text); }
+
+.dr-days-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 11px; font-weight: 600; color: var(--dr-text-muted); margin-bottom: 8px; }
+.dr-days-grid { display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 4px; text-align: center; }
+
+/* Style Tanggal */
+.dr-day {
+  font-size: 12px; padding: 6px 0; cursor: pointer; color: var(--dr-text);
+  position: relative; transition: background 0.1s; margin: 0; box-sizing: border-box;
+}
+.dr-day.empty { cursor: default; }
+.dr-day.disabled { color: var(--dr-text-muted); cursor: not-allowed; opacity: 0.4; }
+
+/* Efek Hover Reguler */
+.dr-day:not(.empty):not(.disabled):hover { background: var(--dr-light); border-radius: 4px;}
+
+/* LOGIKA WARNA PERSIS VIDEO (TAPI BIRU MUDA) */
+.dr-day.range-start, .dr-day.range-end {
+  background: var(--dr-primary) !important; color: #fff; border-radius: 4px; font-weight: 600;
+}
+.dr-day.range-end-hover {
+  background: var(--dr-primary) !important; color: #fff; border-radius: 4px; opacity: 0.8;
+}
+.dr-day.in-range, .dr-day.hover-range {
+  background: var(--dr-light); border-radius: 0;
+}
+
 </style>
 </head>
 <body>
@@ -2036,17 +2276,11 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
     <div class="sb-item" data-mod="imc" data-page="kc-dash">
       <div class="sb-ic">📊</div><span>Dashboard</span>
     </div>
-    <div class="sb-item" data-mod="imc" data-page="kc-input">
-      <div class="sb-ic">✏️</div><span>Input Konten</span>
-    </div>
     <div class="sb-item" data-mod="imc" data-page="kc-data">
       <div class="sb-ic">📋</div><span>Data Konten</span>
     </div>
     <div class="sb-item" data-mod="imc" data-page="kc-rank">
       <div class="sb-ic">🏆</div><span>Ranking</span>
-    </div>
-    <div class="sb-item" data-mod="imc" data-page="kc-chart">
-      <div class="sb-ic">📈</div><span>Analytics</span>
     </div>
  
     <div class="sb-divider"></div>
@@ -2054,6 +2288,9 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
     <div class="sb-sec" id="nav-sec-stock">📦 Stok Second</div>
     <div class="sb-item" data-mod="stock" data-page="st-main">
       <div class="sb-ic">🗃️</div><span>Inventori Stok</span>
+    </div>
+    <div class="sb-item" data-mod="stock" data-page="st-rekap">
+      <div class="sb-ic">📑</div><span>Rekapitulasi</span>
     </div>
     <div class="sb-item" data-mod="stock" data-page="st-riwayat">
       <div class="sb-ic">🕒</div><span>Riwayat Revisi</span>
@@ -2126,57 +2363,6 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         <div class="card tgt-card" id="tgt-bulanan"></div>
         <div class="card tgt-card" id="tgt-harian"></div>
       </div>
-      <div class="sec-hd" style="margin-bottom:14px">
-        <div class="sec-ttl">View Harian — Bulan Ini</div>
-      </div>
-      <div class="card cp" style="margin-bottom:0">
-        <div class="ch-h"><canvas id="chartKcDaily"></canvas></div>
-      </div>
-    </div>
- 
-    <div class="page" id="page-kc-input">
-      <div class="card cp" style="max-width:860px">
-        <div class="sec-hd">
-          <div class="sec-ttl" id="kc-form-title">✏️ Tambah Konten Baru</div>
-        </div>
-        <div class="form-grid" style="margin-bottom:16px">
-          <div class="fg">
-            <label for="kc-tgl">📅 Tanggal & Waktu</label>
-            <input class="fc" type="datetime-local" id="kc-tgl" name="tanggal_konten"/>
-          </div>
-          <div class="fg">
-            <label for="kc-plat">📌 Platform</label>
-            <select class="fc" id="kc-plat" name="platform">
-              <option value="Instagram">📸 Instagram</option>
-              <option value="TikTok">🎵 TikTok</option>
-            </select>
-          </div>
-          <div class="fg full">
-            <label for="kc-link">🔗 Link Konten *</label>
-            <input class="fc" type="url" id="kc-link" name="link_konten" placeholder="https://www.instagram.com/..."/>
-          </div>
-          <div class="fg full">
-            <label for="kc-judul">📝 Judul Konten *</label>
-            <input class="fc" type="text" id="kc-judul" name="judul_konten" placeholder="Masukkan judul konten..."/>
-          </div>
-          <div class="fg">
-            <label for="kc-view">👁️ Jumlah View</label>
-            <input class="fc" type="number" id="kc-view" name="jumlah_view" value="0" min="0"/>
-          </div>
-          <div class="fg">
-            <label for="kc-sig">📱 Story IG</label>
-            <input class="fc" type="number" id="kc-sig" name="story_ig" value="0" min="0"/>
-          </div>
-          <div class="fg">
-            <label for="kc-stk">🎬 Story TikTok</label>
-            <input class="fc" type="number" id="kc-stk" name="story_tiktok" value="0" min="0"/>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-primary" id="kc-submit-btn" onclick="kcSubmit()">💾 Simpan Data</button>
-          <button class="btn btn-glass" onclick="kcReset()">↺ Reset</button>
-        </div>
-      </div>
     </div>
  
     <div class="page" id="page-kc-data">
@@ -2233,29 +2419,6 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
       </div>
     </div>
  
-    <div class="page" id="page-kc-chart">
-      <div class="chart-grid">
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">View Harian (Bulan Ini)</div></div>
-          <div class="ch-h"><canvas id="chartKcDailyFull"></canvas></div>
-        </div>
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">Distribusi Platform</div></div>
-          <div class="ch-h"><canvas id="chartKcPie"></canvas></div>
-        </div>
-      </div>
-      <div class="chart-grid-2">
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">View Bulanan</div></div>
-          <div class="ch-h-sm"><canvas id="chartKcMonthly"></canvas></div>
-        </div>
-        <div class="card cp">
-          <div class="sec-hd"><div class="sec-ttl">Perbandingan Platform</div></div>
-          <div class="ch-h-sm"><canvas id="chartKcBar"></canvas></div>
-        </div>
-      </div>
-    </div>
- 
     <div class="page" id="page-st-main">
       <div class="stats-grid" id="st-stats-grid"></div>
       
@@ -2281,8 +2444,7 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
 
         <div style="display:flex; gap:8px; align-items:center;">
           <div class="search-wrap">
-            <input class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." oninput="stFilter();toggleSearchClear()" style="min-width:200px"/>
-            <button type="button" id="st-search-clear" class="search-clear-btn" onclick="clearStSearch()"> ✕ </button>
+            <input type="search" class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." onkeydown="if(event.key === 'Enter') stFilter()" oninput="if(this.value === '') stFilter()" style="min-width: 200px; padding-right: 12px;">
           </div>
           <button class="btn btn-primary btn-sm" onclick="stOpenAdd()">
             + Tambah
@@ -2360,7 +2522,112 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         </div>
       </div>
     </div>
- 
+
+    <!-- HALAMAN REKAPITULASI -->
+    <div class="page" id="page-st-rekap">
+  <div class="card" style="padding:0; overflow:visible;">
+    
+    <div class="cp-sm" style="padding: 20px 24px; border-bottom: 1px solid var(--border);">
+      <div class="sec-hd" style="margin:0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        
+        <div>
+          <div class="sec-ttl" style="font-size: 16px; margin: 0;">📑 Rekapitulasi Stok</div>
+          <div style="font-size: 11px; color: var(--t3); margin-top: 4px; font-weight: 500;">Ringkasan dan laporan keseluruhan data stok produk</div>
+        </div>
+        
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
+          <div class="filter-group custom-daterange" style="position: relative; min-width: 280px;">
+            <button id="daterange-btn" class="dr-btn">
+              <span style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 14px;">📅</span> 
+                <span id="daterange-label" style="font-weight: 600;">Minggu Ini:</span> 
+                <span id="daterange-val" style="color: var(--t2);"></span>
+              </span>
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+
+            <div id="daterange-dropdown" class="dr-dropdown">
+              <div class="dr-sidebar">
+                <div class="dr-preset active" data-preset="Minggu Ini">Minggu Ini</div>
+                <div class="dr-preset" data-preset="Dalam bulan ini">Dalam bulan ini</div>
+                <div class="dr-preset" data-preset="Dalam 3 bulan terakhir">Dalam 3 bulan terakhir</div>
+                <div class="dr-divider"></div>
+                <div class="dr-preset" id="menu-pilih-tanggal" data-preset="Pilih Tanggal" style="display: flex; justify-content: space-between; align-items: center;">
+                  Pilih Tanggal
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+              </div>
+
+              <div id="calendar-panel" class="dr-calendar-panel">
+                <div class="dr-calendar">
+                  <div class="dr-cal-header">
+                    <button id="prev-month-btn" class="dr-nav-btn">❮</button>
+                    <span id="cal-label-1" class="dr-month-label">Bulan Tahun</span>
+                    <button style="visibility: hidden;" class="dr-nav-btn">❯</button>
+                  </div>
+                  <div class="dr-days-header">
+                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                  </div>
+                  <div id="cal-days-1" class="dr-days-grid"></div>
+                </div>
+
+                <div class="dr-calendar" style="border-left: 1px solid #e2e8f0; padding-left: 16px;">
+                  <div class="dr-cal-header">
+                    <button style="visibility: hidden;" class="dr-nav-btn">❮</button>
+                    <span id="cal-label-2" class="dr-month-label">Bulan Tahun</span>
+                    <button id="next-month-btn" class="dr-nav-btn">❯</button>
+                  </div>
+                  <div class="dr-days-header">
+                    <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+                  </div>
+                  <div id="cal-days-2" class="dr-days-grid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-terapkan" class="btn btn-primary" style="height: 40px; padding: 0 20px;">Terapkan</button>
+            <button id="btn-reset" class="btn btn-glass" style="height: 40px; padding: 0 20px;">Atur Ulang</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-scroll">
+      <table class="premium-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th style="text-align: center; width: 60px;">NO</th>
+            <!-- Lebar dikunci agar tidak melar -->
+            <th style="text-align: left; width: 350px;">TYPE PRODUK</th>
+            <th style="text-align: center; width: 200px;">KATEGORI</th>
+            <th style="text-align: center; width: 120px;">TERJUAL</th>
+            <!-- Kolom kosong penyeimbang untuk mengisi sisa ruang di kanan -->
+            <th></th> 
+          </tr>
+        </thead>
+        <tbody id="st-rekap-tbody">
+          <tr>
+            <!-- Colspan diubah menjadi 5 karena sekarang ada 5 kolom -->
+            <td colspan="5" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
+              Klik "Terapkan" untuk menampilkan data rekapitulasi...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="pag" style="padding:12px 24px; border-top: 1px solid var(--border); border-radius: 0 0 10px 10px; background-color: #fff; display: flex; justify-content: space-between; align-items: center;">
+      <span class="pag-info" id="st-rekap-pinfo">Menampilkan 0 data</span>
+      <div class="pag-btns" id="st-rekap-pbtns" style="display: flex; gap: 6px;">
+        </div>
+    </div>
+
+  </div>
+</div>
+
     <div class="page" id="page-st-riwayat">
       <div class="card" style="padding:0;overflow:hidden">
         <div class="cp-sm" style="border-bottom:1px solid var(--border)">
@@ -2375,7 +2642,7 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
               
               <div class="search-wrap" style="min-width: 200px; flex: 1; max-width: 300px;">
-                <input class="flt-in" id="st-riwayat-search" placeholder="🔍 Cari ID, Nama Produk..." style="width: 100%; height: 40px;"/>
+                <input type="search" class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." onkeydown="if(event.key === 'Enter') stFilter()" oninput="if(this.value === '') stFilter()" style="min-width: 200px; padding-right: 12px;">
               </div>
               
               <select class="flt-in" id="st-riwayat-bulan" style="width: auto; height: 40px; min-width: 140px; cursor: pointer;">
@@ -3368,7 +3635,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbxjhD8dmSWPoAaKJr90jK2BlJejiuBHKWo7C050OQGiu9YvyNafIRNtUxCFj8XyksUm3A/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwnuuaxCVSU1wX9Eq-C-Ep0JgkBH9ANrqCkrtHiA5So6-HXQoAHZTSqOLw_m7nMN-Rabw/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -3452,11 +3719,25 @@ function parseTgl(str) {
 
   let s = String(str).trim();
   
-  // Handle format DD/MM/YYYY
+  // === FIX UNTUK MEMBACA FORMAT: dd/MM/yyyy HH:mm:ss ===
   if (s.includes('/')) {
-    const p = s.split('/');
+    // Pisahkan antara tanggal dan waktu ("15/08/2026" dan "14:30:00")
+    let parts = s.split(/\s+/); 
+    let datePart = parts[0].split('/'); // Hasil: [Tanggal, Bulan, Tahun]
+    
+    // Default waktu 0 jika tidak ada jamnya
+    let hh = 0, mm = 0, ss = 0; 
+    
+    // Jika ada waktunya, ekstrak jam, menit, detik
+    if (parts[1]) {
+      let timePart = parts[1].split(':');
+      hh = parseInt(timePart[0] || 0, 10);
+      mm = parseInt(timePart[1] || 0, 10);
+      ss = parseInt(timePart[2] || 0, 10);
+    }
+    
     // p[0]=Tanggal, p[1]=Bulan, p[2]=Tahun
-    return new Date(p[2], p[1] - 1, p[0]);
+    return new Date(datePart[2], datePart[1] - 1, datePart[0], hh, mm, ss);
   }
   
   // === FIX UNTUK BULAN INDONESIA ("01, Mei, 2026") ===
@@ -3484,7 +3765,7 @@ function parseTgl(str) {
         let d = parts[0].padStart(2, '0');
         let m = angkaBulan;
         let y = parts[2];
-        // Ubah menjadi format standar ISO (YYYY-MM-DD) agar pasti berhasil
+        // Ubah menjadi format standar ISO (YYYY-MM-DD)
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
     }
@@ -3607,16 +3888,16 @@ function toggleTheme(){
    NAVIGATION
 ═══════════════════════════════════════════════════════════ */
 const PG_TITLES={
-  'kc-dash':'Dashboard','kc-input':'Input Konten','kc-data':'Data Konten',
-  'kc-rank':'Ranking Konten','kc-chart':'Analytics',
-  'st-main':'Inventori Stok','st-riwayat':'Riwayat Revisi','st-add':'Tambah Produk', 'st-flash': 'Daftar Promosi Flash Sale',
+  'kc-dash':'Dashboard','kc-data':'Data Konten',
+  'kc-rank':'Ranking Konten',
+  'st-main':'Inventori Stok','st-riwayat':'Riwayat Revisi','st-add':'Tambah Produk', 'st-flash': 'Daftar Promosi Flash Sale','st-rekap': 'Rekapitulasi',
   'pa-dash':'Dashboard','pa-offline':'Penjualan Offline','pa-online':'Penjualan Online',
   'pa-live':'Performa Live','pa-chat':'Performa Chat','pa-lb':'Leaderboard',
 };
 const PG_SUBS={
-  'kc-dash':'IMC Monitoring','kc-input':'IMC Monitoring','kc-data':'IMC Monitoring',
-  'kc-rank':'IMC Monitoring','kc-chart':'IMC Monitoring',
-  'st-main':'Stock Inventori','st-riwayat':'Stock Inventori','st-add':'Stock Inventori', 'st-flash': 'Stock Inventori',
+  'kc-dash':'IMC Monitoring','kc-data':'IMC Monitoring',
+  'kc-rank':'IMC Monitoring',
+  'st-main':'Stock Inventori','st-riwayat':'Stock Inventori','st-add':'Stock Inventori', 'st-flash': 'Stock Inventori', 'st-rekap': 'Stock Inventori',
   'pa-dash':'Performa Admin','pa-offline':'Performa Admin','pa-online':'Performa Admin',
   'pa-live':'Performa Admin','pa-chat':'Performa Admin','pa-lb':'Performa Admin',
 };
@@ -4315,7 +4596,7 @@ function renderStStats(){
     {lbl:'Stok Habis',  val:fmt(habis),    c:'c6',ic:'🔴',sub:'Perlu restock'},
     {lbl:'Stok Menipis',val:fmt(menipis),  c:'c4',ic:'⚠️',sub:'< 5 unit'},
   ].map(s=>`<div class="card stat-card"><div class="s-lbl">${s.lbl}</div><div class="s-val ${s.c}">${s.val}</div><div class="s-sub">${s.sub}</div><div class="s-ic">${s.ic}</div></div>`).join('');
-  // Update chip counts
+  
   $('cnt-semua').textContent=total;
   $('cnt-ada').textContent=ada;
   $('cnt-habis').textContent=habis;
@@ -4326,76 +4607,348 @@ function renderStStats(){
 function stFilter(){
   const q=($('st-search')?.value||'').toLowerCase();
   let r=[...S.st.data];
+  
   if(q) r=r.filter(d=>[d['Nama Produk'],d['Id Produk'],d['Nama Variasi']].some(v=>String(v||'').toLowerCase().includes(q)));
   const f=S.st.filter, gs=d=>parseInt(d['Stok Lama'])||0;
   if(f==='ada')      r=r.filter(d=>gs(d)>0);
   if(f==='habis')    r=r.filter(d=>gs(d)===0);
   if(f==='menipis')  r=r.filter(d=>{ const s=gs(d); return s>0&&s<5; });
   if(f==='no-harga') r=r.filter(d=>!String(d['Harga Jual Saat Ini']||'').replace(/\D/g,''));
+  
+  r.sort((a, b) => {
+    const namaA = String(a['Nama Produk'] || '').toLowerCase();
+    const namaB = String(b['Nama Produk'] || '').toLowerCase();
+    return namaA.localeCompare(namaB);
+  });
+  
   S.st.filtered=r; S.st.page=1; renderStTableBody();
 }
  
 function renderStTable(){ S.st.filtered=[...S.st.data]; S.st.page=1; stFilter(); }
- 
+
+/* ═══════════════════════════════════════════════════════════
+   FUNGSI INLINE HARGA & STOK (TOMBOL OTOMATIS ABU-ABU / AKTIF)
+═══════════════════════════════════════════════════════════ */
+
+// Helper pembersih angka (anti minus/huruf)
+window.formatNominal = function(value) {
+    if (!value) return '';
+    const cleanVal = String(value).replace(/\D/g, ''); 
+    if (!cleanVal) return '';
+    return cleanVal.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+// ---------------- FUNGSI CEK PERUBAHAN INPUT (UNTUK TOMBOL UPDATE) ----------------
+window.checkInlineChanged = function(id) {
+    const inputHb = document.getElementById(`in-hb-${id}`);
+    const inputSb = document.getElementById(`in-sb-${id}`);
+    const btnEl = document.getElementById(`btn-update-${id}`);
+    if (!inputHb || !inputSb || !btnEl) return;
+
+    const currentHbRaw = inputHb.value.replace(/\D/g, '');
+    const savedHbRaw = inputHb.dataset.saved || '';
+
+    const currentSbRaw = inputSb.value.replace(/\D/g, '');
+    const savedSbRaw = inputSb.dataset.saved || '0';
+
+    // Cek apakah ada ketikan baru yang beda dari nilai tersimpan
+    const stokChanged = (currentSbRaw !== '') && (currentSbRaw !== savedSbRaw);
+    const hargaChanged = (currentHbRaw !== '') && (currentHbRaw !== savedHbRaw);
+
+    // Jika ada salah satu yang diisi / diedit, aktifkan tombol (Biru)
+    if (stokChanged || hargaChanged) {
+        btnEl.disabled = false;
+        btnEl.style.background = '#3b82f6';
+        btnEl.style.cursor = 'pointer';
+        btnEl.style.opacity = '1';
+    } else {
+        // Jika tidak ada perubahan, jadikan Abu-abu & Disabled
+        btnEl.disabled = true;
+        btnEl.style.background = '#94a3b8';
+        btnEl.style.cursor = 'not-allowed';
+        btnEl.style.opacity = '0.6';
+    }
+};
+
+// ---------------- FUNGSI HARGA ----------------
+window.formatRupiahLive = function(el) {
+    let rawVal = el.value.replace(/\D/g, '');
+    if (!rawVal) { el.value = ''; return; }
+    el.value = 'Rp ' + window.formatNominal(rawVal);
+};
+
+window.fokusHarga = function(el) {
+    el.style.borderColor = '#3b82f6'; el.style.background = '#eff6ff'; 
+    let savedVal = el.dataset.saved || '';
+    el.value = savedVal; 
+};
+
+window.blurHarga = function(el) {
+    setTimeout(() => {
+        if (el.dataset.updating === 'true') return;
+        let savedVal = el.dataset.saved || '';
+        el.value = savedVal ? ('Rp ' + window.formatNominal(savedVal)) : '—';
+        el.style.borderColor = '#cbd5e1'; el.style.background = '#f8fafc';
+        
+        // Cek kembali status tombol setelah auto-revert
+        const id = el.id.replace('in-hb-', '');
+        window.checkInlineChanged(id);
+    }, 200); 
+};
+
+// ---------------- FUNGSI STOK ----------------
+window.formatStokLive = function(el) {
+    el.value = el.value.replace(/\D/g, ''); // Hanya boleh angka
+};
+
+window.fokusStok = function(el) {
+    el.style.borderColor = '#10b981'; 
+    el.style.background = '#ecfdf5'; 
+    let savedVal = el.dataset.saved || '';
+    el.value = savedVal; 
+};
+
+window.blurStok = function(el) {
+    setTimeout(() => {
+        if (el.dataset.updating === 'true') return;
+        let savedVal = el.dataset.saved || '0';
+        el.value = savedVal;
+        el.style.borderColor = '#cbd5e1'; el.style.background = '#f8fafc';
+        
+        // Cek kembali status tombol setelah auto-revert
+        const id = el.id.replace('in-sb-', '');
+        window.checkInlineChanged(id);
+    }, 200); 
+};
+
+// ---------------- FUNGSI UPDATE GABUNGAN PARSIAL ----------------
+window.simpanInline = async function(id) {
+    const inputHb = document.getElementById(`in-hb-${id}`);
+    const inputSb = document.getElementById(`in-sb-${id}`);
+    const btnEl = document.getElementById(`btn-update-${id}`);
+    const hpLabel = document.getElementById(`lbl-hp-${id}`); 
+    
+    if (!inputHb || !inputSb || !btnEl || btnEl.disabled) return;
+    
+    // Lock state blur agar tidak memicu auto-revert
+    inputHb.dataset.updating = 'true';
+    inputSb.dataset.updating = 'true';
+    
+    const hargaBaruRaw = inputHb.value.replace(/\D/g, '');
+    const stokBaruRaw = inputSb.value.replace(/\D/g, '');
+    
+    const savedHb = inputHb.dataset.saved || '';
+    const savedSb = inputSb.dataset.saved || '0';
+
+    const idx = S.st.data.findIndex(x => String(x['Id Produk']) === String(id));
+    if (idx === -1) {
+        toast('❌ Produk tidak ditemukan!', 'warn');
+        inputHb.dataset.updating = 'false'; inputSb.dataset.updating = 'false';
+        return;
+    }
+
+    // Deteksi bidang mana yang sebenarnya diubah
+    const isStokChanged = (stokBaruRaw !== '') && (stokBaruRaw !== savedSb);
+    const isHargaChanged = (hargaBaruRaw !== '') && (hargaBaruRaw !== savedHb);
+
+    if (!isStokChanged && !isHargaChanged) {
+        toast('⚠️ Tidak ada data yang diubah!', 'warn');
+        inputHb.dataset.updating = 'false'; inputSb.dataset.updating = 'false';
+        return;
+    }
+    
+    let oldText = btnEl.innerHTML;
+    btnEl.disabled = true;
+    btnEl.innerHTML = '⏳...';
+
+    try {
+        const updateData = {};
+
+        // 1. LOGIKA UPDATE STOK (Jika Stok Baru Di-edit)
+        if (isStokChanged) {
+            const valStokBaru = parseInt(stokBaruRaw) || 0;
+            updateData['Stok Lama'] = valStokBaru; // Stok Lama disesuaikan jadi sama dengan Stok Baru
+            updateData['Stok Baru'] = valStokBaru;
+        }
+
+        // 2. LOGIKA UPDATE HARGA (Jika Harga Baru Di-edit)
+        if (isHargaChanged) {
+            updateData['Harga Jual Saat Ini'] = hargaBaruRaw;
+            updateData['Harga Terbaru'] = hargaBaruRaw;
+        }
+
+        // 3. KIRIM KE GOOGLE SHEET (Hanya kirim field yang di-update)
+        const r = await fetch(CFG.apiDATA, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'update',
+                sheet: CFG.sheetStock,
+                keyCol: 'Id Produk',
+                keyVal: id,
+                data: updateData
+            })
+        });
+        
+        const res = await r.json();
+        if (res.error) throw new Error(res.error);
+
+        // 4. UPDATE MEMORI LOKAL S.st.data
+        if (isStokChanged) {
+            S.st.data[idx]['Stok Lama'] = updateData['Stok Lama'];
+            S.st.data[idx]['Stok Baru'] = updateData['Stok Baru'];
+            inputSb.dataset.saved = updateData['Stok Baru'];
+        }
+        
+        if (isHargaChanged) {
+            S.st.data[idx]['Harga Jual Saat Ini'] = updateData['Harga Jual Saat Ini'];
+            S.st.data[idx]['Harga Terbaru'] = updateData['Harga Terbaru'];
+            inputHb.dataset.saved = updateData['Harga Terbaru'];
+            if (hpLabel) hpLabel.textContent = 'Rp ' + window.formatNominal(hargaBaruRaw);
+        }
+
+        if (typeof renderStStats === 'function') renderStStats();
+
+        toast('✨ Data berhasil diperbarui!', 'ok');
+
+        // 5. RE-RENDER TABEL STOK
+        if (typeof renderStTableBody === 'function') renderStTableBody();
+
+        // ═══════════════════════════════════════════════════════════
+        // 6. MENGAMBIL DATA RIWAYAT TERBARU & RE-RENDER TABEL RIWAYAT
+        // ═══════════════════════════════════════════════════════════
+        try {
+            const rwRes = await apiGet(CFG.apiDATA, CFG.sheetRiwayat);
+            if (Array.isArray(rwRes)) {
+                S.st.riwayat = rwRes.reverse();
+            } else {
+                S.st.riwayat = [];
+            }
+            if (typeof renderStRiwayat === 'function') {
+                renderStRiwayat();
+            }
+        } catch (errRiwayat) {
+            console.error('Gagal mengambil update riwayat:', errRiwayat);
+        }
+        // ═══════════════════════════════════════════════════════════
+
+    } catch (err) {
+        console.error('Gagal update:', err);
+        toast('❌ Gagal menyimpan ke Spreadsheet!', 'err');
+        
+        // Revert ke data saved awal jika gagal
+        let savedHbVal = inputHb.dataset.saved || '';
+        inputHb.value = savedHbVal ? ('Rp ' + window.formatNominal(savedHbVal)) : '—';
+        
+        let savedSbVal = inputSb.dataset.saved || '0';
+        inputSb.value = savedSbVal;
+
+        if (btnEl) {
+            btnEl.style.background = '#ef4444'; 
+            btnEl.innerHTML = 'Gagal';
+            setTimeout(() => { 
+                window.checkInlineChanged(id);
+                btnEl.innerHTML = oldText; 
+            }, 1800);
+        }
+    } finally {
+        if (inputHb) inputHb.dataset.updating = 'false';
+        if (inputSb) inputSb.dataset.updating = 'false';
+    }
+};
+
+/* ═══════════════════════════════════════════════════════════ */
+
 function renderStTableBody(){
   const arr=S.st.filtered, rpp=S.st.rpp, pg=S.st.page;
   const total=arr.length, totalPg=Math.max(1,Math.ceil(total/rpp));
   if(pg>totalPg) S.st.page=totalPg;
   const s=(S.st.page-1)*rpp, slice=arr.slice(s,s+rpp);
   const tb=$('st-tbody'); if(!tb) return;
- 
+
   $('st-load').style.display='none'; $('st-empty').style.display=slice.length?'none':'block';
+  
   if(!slice.length){ tb.innerHTML=''; }
   else {
     tb.innerHTML=slice.map(item=>{
       const sOld=parseInt(item['Stok Lama'])||0, sNew=parseInt(item['Stok Baru'])||0;
-      const qc=sNew===0?'b-mis':sNew<5?'b-pro':'b-ach';
       const id=esc(item['Id Produk']||''), nm=esc(item['Nama Produk']||''), vr=esc(item['Nama Variasi']||'');
-      const hp=esc(item['Harga Jual Saat Ini']||''), hb=esc(item['Harga Terbaru']||'');
+      
+      const hp=item['Harga Jual Saat Ini']||'';
+      const hb=item['Harga Terbaru']||'';
+
+      const displayHp = hp ? fmtRp(hp) : '—';
+      const rawHb = (hb && hb !== '0') ? String(hb).replace(/\D/g, '') : '';
+      const displayHb = rawHb ? ('Rp ' + window.formatNominal(rawHb)) : '—';
+
       return `<tr>
         <td data-label="ID Produk" style="font-family:var(--mono);font-size:10.5px">${id}</td>
         <td data-label="Nama Produk"><div style="font-weight:700;font-size:12.5px">${nm}</div></td>
         <td data-label="Variasi" style="font-size:11px;color:var(--t2)">${vr||'—'}</td>
         <td data-label="Stok Lama" class="num">${sOld}</td>
-        <td data-label="Stok Baru"><span class="badge ${qc}">${sNew}</span></td>
-        <td data-label="Harga Jual" class="num" style="font-size:11px">${fmtRp(item['Harga Jual Saat Ini'])}</td>
-        <td data-label="Harga Terbaru" class="num" style="font-size:11px">${fmtRp(item['Harga Terbaru'])}</td>
+        
+        <!-- INPUT STOK BARU -->
+        <td data-label="Stok Baru" class="num">
+          <input type="text"
+                 id="in-sb-${id}"
+                 data-saved="${sNew}"
+                 value="${sNew}"
+                 placeholder="0"
+                 onfocus="fokusStok(this)"
+                 oninput="formatStokLive(this); checkInlineChanged('${id}')"
+                 onblur="blurStok(this)"
+                 style="width: 60px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; color: #0f766e; font-weight: 700; outline: none; background: #f8fafc; transition: 0.2s; text-align: center;"
+          >
+        </td>
+        
+        <td data-label="Harga Jual" class="num" style="font-size:11px" id="lbl-hp-${id}">${displayHp}</td>
+        
+        <!-- INPUT HARGA TERBARU -->
+        <td data-label="Harga Terbaru" class="num" style="font-size:11px">
+          <input type="text" 
+                 id="in-hb-${id}"
+                 data-saved="${rawHb}"
+                 value="${displayHb}"
+                 placeholder="—"
+                 onfocus="fokusHarga(this)"
+                 oninput="formatRupiahLive(this); checkInlineChanged('${id}')"
+                 onblur="blurHarga(this)"
+                 style="width: 130px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 11px; color: #0284c7; font-weight: 700; outline: none; background: #f8fafc; transition: 0.2s; text-align: left;"
+          >
+        </td>
+
+        <!-- KOLOM AKSI: TOMBOL UPDATE (DEFAULT DISABLED / ABU-ABU) -->
         <td data-label="Aksi">
-          <div style="display:flex;gap:5px;justify-content:flex-end;width:100%">
-            <button class="btn btn-glass btn-sm" onclick="panggilStEdit(this)" data-id="${id}" data-nm="${nm}" data-vr="${vr}" data-sl="${sOld}" data-sb="${sNew}" data-hp="${hp}" data-hb="${hb}">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="stDelete('${id}','${nm}')">🗑️</button>
-          </div>
+          <button class="btn btn-primary btn-sm" 
+                  id="btn-update-${id}" 
+                  onclick="simpanInline('${id}')" 
+                  disabled
+                  style="background: #94a3b8; border-radius:6px; padding:6px 14px; font-weight:600; width:100%; cursor: not-allowed; opacity: 0.6; transition: 0.2s;">
+            Update
+          </button>
         </td>
       </tr>`;
     }).join('');
   }
+
   $('st-pinfo').textContent=`${total} produk · Hal ${S.st.page}/${totalPg}`;
   renderPag('st-pbtns', S.st.page, totalPg, p=>{ S.st.page=p; renderStTableBody(); });
 }
  
 /* ST FORM */
 window.stOpenAdd = function(){ 
-  stReset();          // 1. Bersihkan semua sisa form dari aksi edit sebelumnya
-  showPage('st-add'); // 2. Tampilkan modal pop-up
-  stGenId();          // 3. Buat ID produk baru secara otomatis
+  stReset();          
+  showPage('st-add'); 
+  stGenId();          
 };
  
 async function stGenId(){
-
-  // JANGAN generate ID saat mode edit
   if(S.st.editId) return;
-
   try{
-
     const res = await fetch(CFG.apiST + '?action=getId');
     const data = await res.json();
-
     $('st-id').value = data.id;
-
   }catch(err){
-
     $('st-id').value = 'HP' + Date.now().toString().slice(-5);
-
   }
 }
  
@@ -4426,29 +4979,40 @@ window.stSubmit = async function(){
   }
 
   const isEdit = !!S.st.editId;
-  const loadingText = isEdit ? 'Sedang Memperbarui Produk...' : 'Sedang Menambahkan Produk...';
+  const editId = S.st.editId; 
   const btn = $('st-submit-btn');
 
-  // 1. Tampilkan status loading di tombol dan disable klik ganda
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<span class="btn-spinner"></span> Memproses...';
   }
 
-  // 2. Tutup Modal Popup Form langsung dengan animasi halus
   closeStModal();
 
-  // 3. Jeda 250ms untuk menunggu animasi tutup modal, lalu panggil Overlay Full Screen
-  await new Promise(resolve => setTimeout(resolve, 250));
-  showLoad(true, loadingText);
+  // ════════════════════════════════════════════════════════════════
+  // 🚀 OPTIMASI: LANGSUNG TAMPILKAN DI TABEL WEB & KOSONGKAN FORM
+  // ════════════════════════════════════════════════════════════════
+  if (isEdit) {
+    const idx = S.st.data.findIndex(x => String(x['Id Produk']) === String(editId));
+    if (idx !== -1) {
+      S.st.data[idx] = { ...S.st.data[idx], ...payload };
+    }
+  } else {
+    S.st.data.unshift(payload);
+  }
+
+  renderStTable();
+  renderStStats();
+  stReset();
+  toast(isEdit ? '✨ Produk diperbarui! (Menyimpan ke Sheet...)' : '✨ Produk ditambahkan! (Menyimpan ke Sheet...)', 'ok');
+  // ════════════════════════════════════════════════════════════════
 
   try {
     let res;
-    // 4. Update data pada Sheet Stok (via POST)
     if (isEdit) {
       const r = await fetch(CFG.apiDATA, {
         method: 'POST', 
-        body: JSON.stringify({action: 'update', sheet: CFG.sheetStock, keyCol: 'Id Produk', keyVal: S.st.editId, data: payload})
+        body: JSON.stringify({action: 'update', sheet: CFG.sheetStock, keyCol: 'Id Produk', keyVal: editId, data: payload})
       });
       res = await r.json();
     } else {
@@ -4461,36 +5025,24 @@ window.stSubmit = async function(){
 
     if (res.error) throw new Error(res.error);
 
-    // 5. Reload data Inventori dan Riwayat Revisi dari Spreadsheet secara Paralel
     const [stRes, rwRes] = await Promise.all([
       apiGet(CFG.apiDATA, CFG.sheetStock),
       apiGet(CFG.apiDATA, CFG.sheetRiwayat)
     ]);
 
-    // Perbarui state lokal
     if(Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
     if(Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse(); else S.st.riwayat = [];
 
-    // Render ulang UI
     renderStTable();
     renderStStats();
     if (typeof renderStRiwayat === 'function') {
       renderStRiwayat(); 
     }
 
-    // 6. Matikan Overlay Full Screen
-    showLoad(false);
-
-    // 7. Tampilkan Toast Success sesuai UI tema
-    toast(isEdit ? 'Produk berhasil diperbarui!' : 'Produk berhasil ditambahkan!', 'ok');
-
   } catch (err) {
-    // Matikan Loading dan Munculkan Toast Error jika gagal
-    showLoad(false);
-    toast('❌ Gagal menyimpan produk. Silakan coba kembali.', 'err');
+    toast('❌ Gagal menyimpan ke Sheet. Silakan coba kembali.', 'err');
     console.error(err);
   } finally {
-    // Kembalikan kondisi tombol normal
     if (btn) {
       btn.disabled = false;
       btn.innerHTML = isEdit ? '💾 Update Produk' : '💾 Simpan Produk';
@@ -4506,7 +5058,6 @@ window.stReset = function(){
   $('st-harga').readOnly = false;
   $('st-form-title').textContent='➕ Tambah Produk Baru';
   $('st-submit-btn').textContent='💾 Simpan Produk';
-  // Buka kembali field
   $('st-nama').readOnly = false;
   $('st-var').readOnly = false;
   $('st-sl').readOnly = false;
@@ -4514,15 +5065,11 @@ window.stReset = function(){
 };
  
 window.stEdit = function(id,nm,vr,sl,sb,hp,hb){
-
   S.st.editId = id;
-
   showPage('st-add');
-
   $('st-form-title').textContent = '✏️ Edit Produk';
   $('st-submit-btn').textContent = '💾 Update Produk';
 
-  // Kunci field lama
   $('st-nama').readOnly = true;
   $('st-var').readOnly = true;
   $('st-sl').readOnly = true;
@@ -4531,19 +5078,13 @@ window.stEdit = function(id,nm,vr,sl,sb,hp,hb){
   $('st-id').value=id;
   $('st-nama').value=nm;
   $('st-var').value=vr==='—'?'':vr;
-
   $('st-sl').value=sl;
   $('st-sb').value='';
-
   $('st-harga').value=hp||'';
   $('st-harga2').value='';
-
 };
 
-// Fungsi aman untuk membaca data-attributes dan meneruskannya ke fungsi edit utama
 window.panggilStEdit = function(btnElement) {
-  // Mengambil data dengan aman, DOM akan otomatis menerjemahkan kembali 
-  // karakter seperti &quot; menjadi tanda kutip ganda (") secara native.
   const id = btnElement.getAttribute('data-id') || '';
   const nm = btnElement.getAttribute('data-nm') || '';
   const vr = btnElement.getAttribute('data-vr') || '';
@@ -4551,68 +5092,55 @@ window.panggilStEdit = function(btnElement) {
   const sb = btnElement.getAttribute('data-sb') || '';
   const hp = btnElement.getAttribute('data-hp') || '';
   const hb = btnElement.getAttribute('data-hb') || '';
-
-  // Teruskan data bersih tersebut ke fungsi original Anda
   stEdit(id, nm, vr, sl, sb, hp, hb);
 };
 
 window.stDelete = async function(id,nm){
-  const conf=await Swal.fire({title:'Hapus Produk?',html:`<small>${esc(nm)}</small>`,icon:'warning',showCancelButton:true,confirmButtonColor:'#F87171',cancelButtonText:'Batal',confirmButtonText:'Hapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff'});
+  const conf = await Swal.fire({title:'Hapus Produk?',html:`<small>${esc(nm)}</small>`,icon:'warning',showCancelButton:true,confirmButtonColor:'#F87171',cancelButtonText:'Batal',confirmButtonText:'Hapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff'});
   if(!conf.isConfirmed) return;
-  Swal.fire({title:'Menghapus...',allowOutsideClick:false,background:'rgba(3,13,26,.97)',color:'#eff8ff',didOpen:()=>Swal.showLoading()});
-  try{
+
+  S.st.data = S.st.data.filter(x => String(x['Id Produk']) !== String(id));
+  renderStTable();
+  renderStStats();
+  toast('🗑️ Produk dihapus! (Menyinkronkan ke Sheet...)', 'ok');
+
+  try {
     const res = await apiDel(CFG.apiDATA, 'Id Produk', id, CFG.sheetStock);
     if(res.error) throw new Error(res.error);
-    Swal.fire({icon:'success',title:'Dihapus!',background:'rgba(3,13,26,.97)',color:'#eff8ff',timer:1400,showConfirmButton:false});
-    // === OPTIMASI LOKAL UPDATE (0 DETIK) ===
-    S.st.data = S.st.data.filter(x => x['Id Produk'] !== id);
+    
+    const [stRes, rwRes] = await Promise.all([
+      apiGet(CFG.apiDATA, CFG.sheetStock),
+      apiGet(CFG.apiDATA, CFG.sheetRiwayat)
+    ]);
+    if(Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
+    if(Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse(); else S.st.riwayat = [];
     renderStTable();
     renderStStats();
-    // =======================================
-  }catch(e){ Swal.fire({icon:'error',title:'Gagal Hapus',text:e.message,background:'rgba(3,13,26,.97)',color:'#eff8ff',confirmButtonColor:'#00b4d8'}); }
+    if (typeof renderStRiwayat === 'function') renderStRiwayat();
+  } catch(e) { 
+    Swal.fire({icon:'error',title:'Gagal Hapus dari Server',text:e.message,background:'rgba(3,13,26,.97)',color:'#eff8ff',confirmButtonColor:'#00b4d8'}); 
+  }
 };
 
 /* ==========================================
    SEARCH → ENTER = TUTUP KEYBOARD + SCROLL
 ========================================== */
 document.addEventListener('DOMContentLoaded', () => {
-
   const searchInput = document.getElementById('st-search');
   if (!searchInput) return;
-
   searchInput.addEventListener('keydown', function(e){
-
     if(e.key === 'Enter'){
-
       e.preventDefault();
-
-      // Jalankan filter
       stFilter();
-
-      // Tutup keyboard Android/iPhone
       this.blur();
-
-      // Tunggu render selesai lalu scroll
       setTimeout(() => {
-
-        const firstRow =
-          document.querySelector('#st-tbody tr');
-
+        const firstRow = document.querySelector('#st-tbody tr');
         if(firstRow){
-
-          firstRow.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-
+          firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
       }, 150);
-
     }
-
   });
-
 });
  
 /* ═══════════════════════════════════════════════════════════
@@ -5201,30 +5729,21 @@ function renderPaTabelBulanEcommerce(bulan, tahun) {
 function renderPaTabelHarianEcommerce() {
   // 1. LOGIKA TANGGAL (HARI INI, KEMARIN, LUSA)
   const today = new Date();
-  
-  const kemarin = new Date(today);
-  kemarin.setDate(today.getDate() - 1);
-  
-  const lusa = new Date(today);
-  lusa.setDate(today.getDate() - 2);
+  today.setHours(0, 0, 0, 0); // Normalisasi jam ke 00:00:00 agar akurat
 
-  // Helper pencocokan tanggal (agar otomatis mendeteksi format tanggal dari Sheet)
+  const kemarin = new Date(today);
+  kemarin.setDate(kemarin.getDate() - 1);
+
+  const lusa = new Date(today);
+  lusa.setDate(lusa.getDate() - 2);
+
+  // Helper pencocokan tanggal (Menggunakan parseTgl bawaan yang tahan banting)
   function isSameDate(dateStr, targetDate) {
     if (!dateStr) return false;
-    let d;
-    let str = dateStr.toString().split(' ')[0]; // Ambil tanggalnya saja tanpa jam
-    if (str.includes('/')) {
-        const p = str.split('/');
-        // Jika format DD/MM/YYYY
-        if (p[2] && p[2].length === 4) d = new Date(p[2], p[1] - 1, p[0]);
-        // Jika format YYYY/MM/DD
-        else if (p[0] && p[0].length === 4) d = new Date(p[0], p[1] - 1, p[2]);
-        else d = new Date(dateStr);
-    } else {
-        d = new Date(dateStr); // Otomatis baca format "dd mmmm yyyy"
-    }
     
-    if (isNaN(d.getTime())) return false;
+    // Meneruskan ke parseTgl agar support bulan Indonesia ("Agustus", dsb)
+    const d = parseTgl(dateStr); 
+    if (!d || isNaN(d.getTime())) return false;
     
     return d.getDate() === targetDate.getDate() &&
            d.getMonth() === targetDate.getMonth() &&
@@ -5233,7 +5752,6 @@ function renderPaTabelHarianEcommerce() {
 
   // 2. AMBIL DATA DARI SHEET ONLINE (Filter Lusa & Kemarin)
   const sourceData = S.pa.online || S.pa.penjualan || [];
-  // Ganti 'Tanggal' di bawah ini dengan nama header kolom tanggal di sheet-mu jika berbeda
   const dataKemarin = sourceData.filter(r => isSameDate(r['Tanggal'] || r['Date'] || r['Waktu'], kemarin));
   const dataLusa = sourceData.filter(r => isSameDate(r['Tanggal'] || r['Date'] || r['Waktu'], lusa));
 
@@ -5315,7 +5833,7 @@ function renderPaTabelHarianEcommerce() {
     `;
   });
 
-  // 5. RENDER BARIS TOTAL (Format dipisah persis seperti Tabel Bulanan)
+  // 5. RENDER BARIS TOTAL
   if (ecommerceMaster.length > 0) {
     html += `
       <tr style="font-weight: bold; background-color: #f8fafc; border-top: 2px solid #e2e8f0; color: #0f172a;">
@@ -6948,6 +7466,42 @@ function clearStSearch(){
     behavior:'smooth'
   });
 }
+
+/* ENTER = cari + tutup keyboard */
+document.addEventListener('DOMContentLoaded',()=>{
+
+  const inp=document.getElementById('st-search');
+
+  if(!inp) return;
+
+  inp.addEventListener('keydown',(e)=>{
+
+    if(e.key==='Enter'){
+
+      e.preventDefault();
+
+      stFilter();
+
+      inp.blur();
+
+      setTimeout(()=>{
+
+        const firstRow=document.querySelector('#st-tbody tr');
+
+        if(firstRow){
+          firstRow.scrollIntoView({
+            behavior:'smooth',
+            block:'center'
+          });
+        }
+
+      },150);
+
+    }
+
+  });
+
+});
 
 /* ==========================================================================
    FUNGSI FLASH SALE MODAL & TAB
@@ -9279,6 +9833,632 @@ function resetLbFilter() {
   renderPaLbLive(blnAngka, thnAngka);
   prosesDataChat(blnAngka, thnAngka);
 }
+
+// ==========================================
+// LOGIKA REKAPITULASI TRANSAKSI & KALENDER
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('daterange-btn');
+  const dropdown = document.getElementById('daterange-dropdown');
+  const calPanel = document.getElementById('calendar-panel');
+  const presets = document.querySelectorAll('.dr-preset');
+  
+  // Format Tanggal (DD/MM/YYYY)
+  const formatTgl = (d) => {
+    if (!d) return '';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  };
+
+  const getToday = () => {
+    const t = new Date(); 
+    t.setHours(0,0,0,0); 
+    return t;
+  };
+  const today = getToday();
+
+  // --- PERHITUNGAN PRESET ---
+  let startMinggu = new Date(today);
+  startMinggu.setDate(today.getDate() - today.getDay()); // Hari Minggu
+
+  let startBulan = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  let start3Bulan = new Date(today);
+  start3Bulan.setMonth(start3Bulan.getMonth() - 3);
+
+  const presetsData = {
+    'Minggu Ini': { start: startMinggu, end: today },
+    'Dalam bulan ini': { start: startBulan, end: today },
+    'Dalam 3 bulan terakhir': { start: start3Bulan, end: today }
+  };
+
+  // State Variabel Tanggal
+  let startDate = new Date(presetsData['Minggu Ini'].start);
+  let endDate = new Date(presetsData['Minggu Ini'].end);
+  let tempStartDate = null; 
+  let isSelecting = false;  
+  let hoverDate = null;     
+
+  // State Variabel Paginasi & Data Rekap
+  let rekapDataFull = [];
+  let currentRekapPage = 1;
+  const itemsPerPage = 15; // MAKSIMAL 15 DATA PER HALAMAN
+
+  // Inisialisasi Teks Tombol Filter
+  const daterangeVal = document.getElementById('daterange-val');
+  if (daterangeVal) {
+    daterangeVal.textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+  }
+
+  // --- BUKA / TUTUP DROPDOWN ---
+  if (btn && dropdown) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!dropdown.classList.contains('show')) {
+        dropdown.classList.add('show');
+        isSelecting = false; 
+        tempStartDate = null; 
+        hoverDate = null;
+        renderAll();
+      } else {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.remove('show');
+        isSelecting = false; tempStartDate = null; hoverDate = null;
+      }
+    });
+  }
+
+  // --- INTERAKSI SIDEBAR PRESET ---
+  presets.forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      if (item.id === 'menu-pilih-tanggal') {
+        calPanel.classList.add('show');
+        renderAll();
+      } else {
+        calPanel.classList.remove('show');
+      }
+    });
+
+    item.addEventListener('click', () => {
+      const pName = item.getAttribute('data-preset');
+      presets.forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+
+      if (pName !== 'Pilih Tanggal') {
+        startDate = new Date(presetsData[pName].start);
+        endDate = new Date(presetsData[pName].end);
+        
+        document.getElementById('daterange-label').textContent = pName + ":";
+        document.getElementById('daterange-val').textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+        
+        dropdown.classList.remove('show');
+        isSelecting = false;
+        
+        currentMonth2 = endDate.getMonth(); 
+        currentYear2 = endDate.getFullYear();
+        updateMonths();
+      }
+    });
+  });
+
+  // --- SETUP KALENDER ---
+  const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  let currentMonth2 = today.getMonth(); 
+  let currentYear2 = today.getFullYear();
+  let currentMonth1, currentYear1;
+
+  const updateMonths = () => {
+    currentMonth1 = currentMonth2 - 1;
+    currentYear1 = currentYear2;
+    if (currentMonth1 < 0) { currentMonth1 = 11; currentYear1--; }
+  };
+  updateMonths();
+
+  // FUNGSI UPDATE WARNA KALENDER
+  const updateHighlights = () => {
+    const days = document.querySelectorAll('.dr-day:not(.empty)');
+    days.forEach(dayDiv => {
+      const time = parseInt(dayDiv.dataset.time);
+      if (!time) return;
+
+      dayDiv.classList.remove('range-start', 'range-end', 'in-range', 'hover-range', 'range-end-hover');
+
+      if (!isSelecting) {
+        if (startDate && time === startDate.getTime()) dayDiv.classList.add('range-start');
+        if (endDate && time === endDate.getTime()) dayDiv.classList.add('range-end');
+        if (startDate && endDate && time > startDate.getTime() && time < endDate.getTime()) {
+          dayDiv.classList.add('in-range');
+        }
+      } else {
+        if (tempStartDate && time === tempStartDate.getTime()) {
+          dayDiv.classList.add('range-start');
+        }
+
+        if (tempStartDate && hoverDate) {
+          const tMin = Math.min(tempStartDate.getTime(), hoverDate.getTime());
+          const tMax = Math.max(tempStartDate.getTime(), hoverDate.getTime());
+
+          if (time > tMin && time < tMax) {
+            dayDiv.classList.add('hover-range');
+          } else if (time === hoverDate.getTime() && time !== tempStartDate.getTime()) {
+            dayDiv.classList.add('range-end-hover');
+          }
+        }
+      }
+    });
+  };
+
+  // FUNGSI MEMBUAT TAMPILAN BULAN
+  const renderMonth = (month, year, containerId, labelId) => {
+    const container = document.getElementById(containerId);
+    const labelElem = document.getElementById(labelId);
+    if (!container || !labelElem) return;
+
+    labelElem.textContent = `${monthNames[month]} ${year}`;
+    container.innerHTML = '';
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'dr-day empty';
+      container.appendChild(emptyDiv);
+    }
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'dr-day';
+      dayDiv.textContent = i;
+      
+      const currDate = new Date(year, month, i);
+      currDate.setHours(0,0,0,0);
+      dayDiv.dataset.time = currDate.getTime();
+
+      if (currDate > today) dayDiv.classList.add('disabled');
+
+      if (currDate <= today) {
+        dayDiv.addEventListener('mouseenter', () => {
+          if (isSelecting) {
+            hoverDate = currDate;
+            updateHighlights(); 
+          }
+        });
+
+        dayDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          
+          if (!isSelecting) {
+            tempStartDate = currDate;
+            isSelecting = true;
+            hoverDate = currDate;
+
+            document.getElementById('daterange-label').textContent = "Pilih Tanggal:";
+            document.getElementById('daterange-val').textContent = `${formatTgl(tempStartDate)} - ...`;
+
+            presets.forEach(el => el.classList.remove('active'));
+            document.getElementById('menu-pilih-tanggal').classList.add('active');
+
+            updateHighlights();
+          } else {
+            if (currDate < tempStartDate) {
+              startDate = currDate;
+              endDate = tempStartDate;
+            } else {
+              startDate = tempStartDate;
+              endDate = currDate;
+            }
+
+            isSelecting = false;
+            tempStartDate = null;
+            hoverDate = null;
+
+            document.getElementById('daterange-label').textContent = "Pilih Tanggal:";
+            document.getElementById('daterange-val').textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+
+            updateHighlights();
+
+            setTimeout(() => {
+              dropdown.classList.remove('show');
+            }, 120);
+          }
+        });
+      }
+      container.appendChild(dayDiv);
+    }
+  };
+
+  const renderAll = () => {
+    renderMonth(currentMonth1, currentYear1, 'cal-days-1', 'cal-label-1');
+    renderMonth(currentMonth2, currentYear2, 'cal-days-2', 'cal-label-2');
+    updateHighlights();
+  };
+
+  const changeMonth = (offset) => {
+    currentMonth2 += offset;
+    if (currentMonth2 > 11) { currentMonth2 = 0; currentYear2++; }
+    if (currentMonth2 < 0) { currentMonth2 = 11; currentYear2--; }
+    updateMonths();
+    renderAll();
+  };
+
+  const prevBtn = document.getElementById('prev-month-btn');
+  const nextBtn = document.getElementById('next-month-btn');
+  if (prevBtn) prevBtn.onclick = (e) => { e.stopPropagation(); changeMonth(-1); };
+  if (nextBtn) nextBtn.onclick = (e) => { e.stopPropagation(); changeMonth(1); };
+
+  renderAll();
+
+  // ==========================================
+  // FUNGSI NORMALISASI & MATCHING DATA (AKURAT RAM/ROM)
+  // ==========================================
+  const normalizeText = (text) => {
+    if (!text) return "";
+    let str = text.toString().toLowerCase();
+    
+    // Hapus kata sekunder yang tidak esensial
+    const hapusKata = ['ram', 'rom', 'gb', 'tb', 'warna', 'bh', 'black', 'white', 'blue', 'grey', 'green', 'second', 'mulus', 'resmi', 'new'];
+    hapusKata.forEach(kata => {
+      const regex = new RegExp(`\\b${kata}\\b`, 'gi');
+      str = str.replace(regex, '');
+    });
+
+    // PENTING: Dihapus bagian kode (str.replace(/\b\d{1,2}\/\d{2,3}[a-z]*\b/g, '');) 
+    // agar angka memori (seperti 8/256) tetap ada.
+
+    // Hapus semua karakter kecuali huruf dan angka (5 dan g akan aman)
+    // Karakter garis miring '/' juga akan dihapus sehingga '6/128' menjadi '6128'
+    str = str.replace(/[^a-z0-9]/g, '');
+    
+    return str;
+  };
+
+  const prosesRekapData = (masterStock, dataTransaksi) => {
+    return masterStock.map(master => {
+      const namaProduk = master.nama_produk || ''; 
+      const kategori = master.kategori || '';      
+      
+      const masterKey = normalizeText(kategori + namaProduk);
+      const isMaster5G = masterKey.includes('5g');
+
+      const transaksiCocok = dataTransaksi.filter(trx => {
+        const trxKey = normalizeText((trx.kategori || '') + (trx.nama_produk || ''));
+        const isTrx5G = trxKey.includes('5g');
+
+        // Filter ketat: Varian 5G dan 4G tidak boleh saling bentrok
+        if (isMaster5G !== isTrx5G) return false;
+
+        // Cek irisan string yang kini SUDAH TERMASUK angka memori
+        return masterKey.includes(trxKey) || trxKey.includes(masterKey);
+      });
+
+      // Kalkulasi unit
+      const totalUnitTerjual = transaksiCocok.reduce((sum, item) => {
+        return sum + (parseInt(item.unit) || 0);
+      }, 0);
+
+      return {
+        nama_produk: namaProduk,
+        kategori: kategori,
+        total_unit: totalUnitTerjual
+      };
+    });
+  };
+
+  // ==========================================
+  // FUNGSI BANTUAN NOTIFIKASI TOAST DENGAN PROGRESS BAR
+  // ==========================================
+  const showNotification = (text, duration = 3000) => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      // pointer-events: none agar wadah transparan ini tidak menghalangi klik di halaman web
+      container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    // position: relative & overflow: hidden wajib agar progress bar bisa rapi di bawah
+    toast.style.cssText = 'position: relative; background: #ffffff; color: #1e293b; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; font-family: inherit; font-size: 14px; overflow: hidden; min-width: 280px; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; pointer-events: auto;';
+    
+    const content = document.createElement('div');
+    content.style.cssText = 'padding: 12px 18px; display: flex; align-items: center; gap: 10px;';
+    // Desain icon "i" dengan kotak biru seperti di video
+    content.innerHTML = `<span style="background: var(--primary, #0ea5e9); color: white; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; border-radius: 4px; font-family: serif;">i</span> <span>${text}</span>`;
+    
+    toast.appendChild(content);
+
+    // Tambahkan progress bar warna merah JIKA duration lebih dari 0
+    let progressBar;
+    if (duration > 0) {
+      progressBar = document.createElement('div');
+      progressBar.style.cssText = `position: absolute; bottom: 0; left: 0; height: 4px; background-color: #ef4444; width: 100%; transition: width ${duration}ms linear;`;
+      toast.appendChild(progressBar);
+    }
+
+    container.appendChild(toast);
+
+    // Animasi masuk (Slide In dari Kanan) & Trigger animasi Progress Bar
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateX(0)';
+      
+      // Setelah toast muncul, ubah lebar progress bar jadi 0% agar menyusut perlahan
+      if (duration > 0 && progressBar) {
+        requestAnimationFrame(() => {
+          progressBar.style.width = '0%';
+        });
+      }
+    });
+
+    // Fungsi untuk menghapus toast dengan animasi
+    const removeToast = () => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(100%)'; // Slide out ke kanan
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+      }, 300);
+    };
+
+    // Auto-remove jika ada durasi
+    let timeoutId;
+    if (duration > 0) {
+      timeoutId = setTimeout(removeToast, duration);
+    }
+
+    return {
+      remove: () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        removeToast();
+      }
+    };
+  };
+
+  // ==========================================
+  // EVENT TOMBOL TERAPKAN (FETCH DATA + NOTIFIKASI)
+  // ==========================================
+  const btnTerapkan = document.getElementById('btn-terapkan'); 
+
+  if (btnTerapkan) {
+    btnTerapkan.addEventListener('click', () => {
+      const originalText = btnTerapkan.textContent;
+      btnTerapkan.textContent = "Memuat Data...";
+      btnTerapkan.disabled = true;
+
+      // 1. Munculkan notifikasi Loading
+      // Angka '0' artinya notifikasi ini TIDAK ADA progress bar dan TIDAK AKAN hilang otomatis
+      const loadingToast = showNotification("Sedang Memuat Data Mohon Ditunggu...", 0);
+
+      const tanggalAwal = formatTgl(startDate);   
+      const tanggalAkhir = formatTgl(endDate);    
+      
+      const urlRekap = `${CFG.apiDATA}?action=rekapTransaksi&start=${tanggalAwal}&end=${tanggalAkhir}`;
+
+      fetch(urlRekap)
+        .then(response => response.json())
+        .then(data => {
+          
+          const masterStok = data.master_stok || [];
+          const dataTransaksi = data.transaksi || [];
+
+          if (masterStok.length > 0) {
+            const hasilRekap = prosesRekapData(masterStok, dataTransaksi);
+
+            rekapDataFull = hasilRekap.sort((a, b) => {
+              const nameA = (a.nama_produk || '').toString();
+              const nameB = (b.nama_produk || '').toString();
+              return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+            });
+          } else {
+            rekapDataFull = [];
+          }
+
+          currentRekapPage = 1; 
+          renderTabelRekap(currentRekapPage);
+          renderPaginasiRekap();
+
+          // 2. Tutup notifikasi "Memuat" 
+          loadingToast.remove();
+          
+          // 3. Munculkan notifikasi "Sukses"
+          // Tidak perlu isi angka '0', otomatis akan pakai default (3000ms/3 detik) + pakai Progress Bar
+          showNotification("Data Berhasil Di Filter"); 
+          
+        })
+        .catch(error => {
+          console.error("Gagal menarik data:", error);
+          alert("Terjadi kesalahan saat memproses data gabungan.");
+          // Jangan lupa matikan loading toast kalau gagal juga
+          loadingToast.remove();
+        })
+        .finally(() => {
+          btnTerapkan.textContent = originalText;
+          btnTerapkan.disabled = false;
+        });
+    });
+  }
+
+  // ==========================================
+  // EVENT TOMBOL ATUR ULANG (RESET)
+  // ==========================================
+  const btnReset = document.getElementById('btn-reset');
+  
+  if (btnReset) {
+    btnReset.addEventListener('click', () => {
+      // 1. Kembalikan rentang tanggal ke default (Minggu Ini)
+      if (presetsData && presetsData['Minggu Ini']) {
+        startDate = new Date(presetsData['Minggu Ini'].start);
+        endDate = new Date(presetsData['Minggu Ini'].end);
+      }
+      
+      // 2. Perbarui teks di tombol filter kalender
+      const label = document.getElementById('daterange-label');
+      const val = document.getElementById('daterange-val');
+      if (label) label.textContent = "Minggu Ini:";
+      if (val) val.textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
+      
+      // 3. Reset warna aktif di menu sidebar dropdown kalender
+      if (presets) {
+        presets.forEach(el => el.classList.remove('active'));
+        const presetMinggu = Array.from(presets).find(el => el.getAttribute('data-preset') === 'Minggu Ini');
+        if (presetMinggu) presetMinggu.classList.add('active');
+      }
+
+      // 4. Kosongkan kembali data tabel ke kondisi awal
+      rekapDataFull = [];
+      currentRekapPage = 1;
+      
+      const tableBody = document.getElementById('st-rekap-tbody');
+      if (tableBody) {
+        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">Klik "Terapkan" untuk menampilkan data rekapitulasi...</td></tr>';
+      }
+      
+      // 5. Reset informasi paginasi
+      const pInfo = document.getElementById('st-rekap-pinfo');
+      const pBtns = document.getElementById('st-rekap-pbtns');
+      if (pInfo) pInfo.textContent = 'Menampilkan 0 data';
+      if (pBtns) pBtns.innerHTML = '';
+      
+      // 6. Bersihkan sisa-sisa klik di kalender (jika sedang memilih tanggal)
+      isSelecting = false;
+      tempStartDate = null;
+      hoverDate = null;
+      if (typeof updateHighlights === 'function') updateHighlights();
+    });
+  }
+  
+  // ==========================================
+  // FUNGSI RENDER TABEL (MAX 15 DATA & ALIGNMENT RAPI)
+  // ==========================================
+  function renderTabelRekap(page = 1) {
+    const tableBody = document.getElementById('st-rekap-tbody'); 
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = ''; 
+    
+    if (!Array.isArray(rekapDataFull) || rekapDataFull.length === 0) {
+      // UPDATE: colspan diubah jadi 5 menyesuaikan header baru
+      tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--t3);">Data Tidak Ditemukan</td></tr>';
+      return;
+    }
+
+    const startIdx = (page - 1) * itemsPerPage;
+    const endIdx = startIdx + itemsPerPage;
+    const pageData = rekapDataFull.slice(startIdx, endIdx);
+
+    pageData.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align: center; font-weight: 500;">${startIdx + index + 1}</td>
+        <td style="text-align: left; font-weight: 600;">${item.nama_produk || '-'}</td>
+        <td style="text-align: center; color: var(--t2);">${item.kategori || '-'}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--p1);">${item.total_unit ?? 0}</td>
+        <!-- Kolom bayangan kosong di paling kanan -->
+        <td></td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  }
+
+  // ==========================================
+  // FUNGSI RENDER NAVIGASI PAGINASI (DIPERBARUI)
+  // ==========================================
+  function renderPaginasiRekap() {
+    const pInfo = document.getElementById('st-rekap-pinfo');
+    const pBtns = document.getElementById('st-rekap-pbtns');
+    if (!pBtns) return;
+
+    const totalData = rekapDataFull.length;
+    const totalPages = Math.ceil(totalData / itemsPerPage) || 1;
+
+    const startIdx = totalData === 0 ? 0 : (currentRekapPage - 1) * itemsPerPage + 1;
+    const endIdx = Math.min(currentRekapPage * itemsPerPage, totalData);
+
+    if (pInfo) {
+      pInfo.textContent = `Menampilkan ${startIdx} - ${endIdx} dari ${totalData} data`;
+    }
+
+    pBtns.innerHTML = '';
+
+    // --- 1. SIMPAN GAYA CSS TEMA KE DALAM VARIABEL ---
+    // Gaya ini disamakan persis dengan inline CSS pada HTML awal Anda
+    const styleBiasa = "padding: 4px 10px; cursor: pointer; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: inherit; font-family: inherit; font-size: 13px;";
+    const styleAktif = "padding: 4px 10px; cursor: pointer; border: 1px solid var(--primary, #0ea5e9); border-radius: 4px; background: var(--primary, #0ea5e9); color: #fff; font-family: inherit; font-weight: 600; font-size: 13px;";
+
+    // --- 2. TOMBOL PREV (SEBELUMNYA) ---
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn-pag';
+    prevBtn.innerHTML = '&laquo;'; // Menggunakan icon panah seperti di HTML
+    prevBtn.style.cssText = styleBiasa;
+    if (currentRekapPage === 1) {
+        prevBtn.style.opacity = "0.5";
+        prevBtn.style.cursor = "not-allowed";
+    }
+    prevBtn.disabled = currentRekapPage === 1;
+    prevBtn.onclick = () => {
+      if (currentRekapPage > 1) {
+        currentRekapPage--;
+        renderTabelRekap(currentRekapPage);
+        renderPaginasiRekap();
+      }
+    };
+    pBtns.appendChild(prevBtn);
+
+    // --- 3. TOMBOL ANGKA (HALAMAN) DENGAN LOGIKA PEMOTONGAN ---
+    for (let i = 1; i <= totalPages; i++) {
+      // Logika agar tidak semua angka dicetak jika halaman sangat banyak (misal: 1 2 3 ... 15)
+      if (i === 1 || i === totalPages || (i >= currentRekapPage - 1 && i <= currentRekapPage + 1)) {
+          const pageBtn = document.createElement('button');
+          pageBtn.className = `btn-pag ${i === currentRekapPage ? 'active' : ''}`;
+          pageBtn.textContent = i;
+          
+          // Terapkan gaya sesuai status aktif atau tidak
+          pageBtn.style.cssText = (i === currentRekapPage) ? styleAktif : styleBiasa;
+          
+          pageBtn.onclick = () => {
+            currentRekapPage = i;
+            renderTabelRekap(currentRekapPage);
+            renderPaginasiRekap();
+          };
+          pBtns.appendChild(pageBtn);
+      } else if (i === currentRekapPage - 2 || i === currentRekapPage + 2) {
+          // Tambahkan titik-titik pemisah
+          const dotBtn = document.createElement('span');
+          dotBtn.textContent = '...';
+          dotBtn.style.padding = "4px 6px";
+          dotBtn.style.color = "var(--t3)";
+          dotBtn.style.fontSize = "13px";
+          pBtns.appendChild(dotBtn);
+      }
+    }
+
+    // --- 4. TOMBOL NEXT (SELANJUTNYA) ---
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn-pag';
+    nextBtn.innerHTML = '&raquo;'; // Menggunakan icon panah seperti di HTML
+    nextBtn.style.cssText = styleBiasa;
+    if (currentRekapPage === totalPages || totalPages === 0) {
+        nextBtn.style.opacity = "0.5";
+        nextBtn.style.cursor = "not-allowed";
+    }
+    nextBtn.disabled = currentRekapPage === totalPages || totalPages === 0;
+    nextBtn.onclick = () => {
+      if (currentRekapPage < totalPages) {
+        currentRekapPage++;
+        renderTabelRekap(currentRekapPage);
+        renderPaginasiRekap();
+      }
+    };
+    pBtns.appendChild(nextBtn);
+  }
+});
 
 </script>
 </body>
