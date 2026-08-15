@@ -586,25 +586,17 @@ table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
     right:12px;
     top:50%;
     transform:translateY(-50%);
-
     width:22px;
     height:22px;
-
     border:none;
     outline:none;
-
     border-radius:50%;
     background:#eef2f7;
-
     color:#64748b;
-
     font-size:13px;
     font-weight:700;
-
     cursor:pointer;
-
     display:none;
-
     transition:.2s;
 }
 
@@ -960,6 +952,19 @@ table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
   }
 
   /* ── 4. FLASH SALE ── */
+  .fs-tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 8px !important;
+    margin-right: -16px;
+    padding-right: 16px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .fs-tabs::-webkit-scrollbar {
+    display: none !important; 
+  }
   .fs-session-wrapper, .fs-modal-container, .fs-card, .fs-session-table {
     width: 100% !important;
     max-width: 100% !important;
@@ -1674,6 +1679,22 @@ table.premium-table tr:hover { background-color: rgba(30, 136, 229, 0.03); }
   border-bottom: 2px solid #f4f5f7;
   color: #6c757d;
   font-weight: 600;
+}
+
+/* ==========================================================================
+   6. TAMBAHAN KHUSUS: SCROLL TABEL DASHBOARD PERFORMA ADMIN
+   ========================================================================== */
+#page-pa-dash .card.cp {
+  min-width: 0; /* Menjaga agar kotak/layout grid tidak ikut melebar dan hancur */
+}
+
+#page-pa-dash .tbl-wrap {
+  overflow-x: auto !important; /* Membuka kunci khusus di halaman ini agar bisa digeser */
+  -webkit-overflow-scrolling: touch; /* Membuat geseran layar lebih mulus di tablet */
+}
+
+#page-pa-dash .tbl {
+  min-width: 550px !important; /* Memaksa tabel punya lebar minimum agar efek scroll muncul saat layar lebih kecil dari ukuran ini */
 }
 
 /* ==========================================================
