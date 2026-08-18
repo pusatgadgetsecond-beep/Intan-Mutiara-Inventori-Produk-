@@ -8626,10 +8626,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. Ambil URL Spreadsheet secara dinamis
   const spreadsheetUrl = (typeof S !== 'undefined' && S.spreadsheetUrl) 
     ? S.spreadsheetUrl 
-    : "https://docs.google.com/spreadsheets/d/1B4EyBOLDyXGkxUGTYAfc9wpTepIzs5uc2iVir_hyLCM/edit?gid=1920060574#gid=1920060574";
+    : "https://docs.google.com/spreadsheets/d/1HYxwDlshoD8atnCjxlKxWQyKtqOcSu8kzNrRNYjJBXQ/edit?gid=0#gid=0&fvid=1273995544";
 
   // 2. Susun teks pesan 
-  const pesanTeks = `*INFO REVISI HARGA & STOK* \nSegera Revisi Harga Terbaru. Semua Admin Segera Update Ke E-commerce Nya Masing-masing. Dalam Waktu 3 Jam Revisi Harga Akan Otomatis Hilang Jadi Segera Di Revisi\n\n🔗 *Cek Data:* ${spreadsheetUrl}`;
+  const pesanTeks = `*INFO REVISI HARGA & STOK* \nSegera Revisi Harga Terbaru. Semua Admin Segera Update Ke E-commerce Nya Masing-masing. Dalam Waktu 2 Jam Revisi Harga Akan Otomatis Hilang Jadi Segera Di Revisi Sekarang\n\n🔗 *Cek Data:* ${spreadsheetUrl}`;
 
   // 3. Encode teks
   const pesanEncoded = encodeURIComponent(pesanTeks);
@@ -8643,7 +8643,7 @@ function kirimInfoFlashSaleWA() {
   // 1. Ambil URL Spreadsheet secara dinamis
   const spreadsheetUrl = (typeof S !== 'undefined' && S.spreadsheetUrl) 
     ? S.spreadsheetUrl 
-    : "https://docs.google.com/spreadsheets/d/1B4EyBOLDyXGkxUGTYAfc9wpTepIzs5uc2iVir_hyLCM/edit?gid=1905835481#gid=1905835481";
+    : "https://docs.google.com/spreadsheets/d/1HYxwDlshoD8atnCjxlKxWQyKtqOcSu8kzNrRNYjJBXQ/edit?gid=843122327#gid=843122327";
 
   // 2. Susun teks pesan khusus untuk Flash Sale
   const pesanTeks = ` *🔥FLASH SALE ALERT🔥* \nSegera Siapkan Produk Untuk Agenda Flash Sale Mendatang. Sesuai Jadwal Yang Di Share, Mohon Cek Data Dan Pastikan Harga Serta Stok Sudah Sesuai. Pastikan Eksekusi Dilakukan Tepat Waktu Agar Tidak Terlewat.\n\n🔗 *Data Flash Sale:* ${spreadsheetUrl}`;
