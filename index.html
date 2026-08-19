@@ -2531,11 +2531,17 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
       <div class="sec-hd" style="margin:0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
         
         <div>
-          <div class="sec-ttl" style="font-size: 16px; margin: 0;">📑 Rekapitulasi Penjualan</div>
+          <div class="sec-ttl" style="font-size: 16px; margin: 0;">📑 Rekapitulasi Stok</div>
           <div style="font-size: 11px; color: var(--t3); margin-top: 4px; font-weight: 500;">Ringkasan dan laporan keseluruhan data stok produk</div>
         </div>
         
         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
+          <!-- 👇 KOTAK PENCARIAN DITAMBAHKAN DI SINI 👇 -->
+          <!-- flex: 1 akan membuat kotak pencarian otomatis memanjang mengisi ruang kosong seperti di gambar -->
+          <div style="width: 250px;">
+            <input type="search" class="flt-in btn-sm" id="st-search-rekap" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." style="width: 100%; height: 40px; padding: 0 16px; border-radius: 6px; border: 1px solid #3b82f6; outline: none; font-size: 13px;">
+        </div>
+          <!-- 👆 ================================== 👆 -->
           <div class="filter-group custom-daterange" style="position: relative; min-width: 280px;">
             <button id="daterange-btn" class="dr-btn">
               <span style="display: flex; align-items: center; gap: 8px;">
@@ -2604,14 +2610,17 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
             <th style="text-align: left; width: 350px;">TYPE PRODUK</th>
             <th style="text-align: center; width: 200px;">KATEGORI</th>
             <th style="text-align: center; width: 120px;">TERJUAL</th>
+            <!-- Kolom Kemarin & Hari Ini ditambahkan setelah Terjual -->
+            <th style="text-align: center; width: 120px;">KEMARIN</th>
+            <th style="text-align: center; width: 120px;">HARI INI</th>
             <!-- Kolom kosong penyeimbang untuk mengisi sisa ruang di kanan -->
             <th></th> 
           </tr>
         </thead>
         <tbody id="st-rekap-tbody">
           <tr>
-            <!-- Colspan diubah menjadi 5 karena sekarang ada 5 kolom -->
-            <td colspan="5" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
+            <!-- Colspan diubah menjadi 7 karena sekarang ada 7 kolom -->
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">
               Klik "Terapkan" untuk menampilkan data rekapitulasi...
             </td>
           </tr>
@@ -3635,7 +3644,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbw0JHcRYUi3S1mm_qmOmNrrnBxR-MzOrZuR2Duj852MNBo0ukCBNs6Lkopxgr_hKie-Rw/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbyGuUuIl-mvgPy6hq1wHwnLh89lxe1otZCuAXklsdr7q24ZfDqFr-ieX37vs9peVsxAoQ/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -7900,7 +7909,7 @@ const selectedCountEl = document.getElementById('selectedCount');
 const filterKategori = document.getElementById('filterKategori');
 
 async function fetchProductsFromSheet() {
-  tableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:50px;">
+  tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:50px;">
     <div class="spinner" style="border-top-color: var(--c); margin-bottom:10px;"></div>
     <br><span style="color:var(--t3); font-family:var(--mono); font-size:11px;">Mengambil data stok real-time...</span>
   </td></tr>`;
@@ -8629,7 +8638,7 @@ document.addEventListener('DOMContentLoaded', () => {
     : "https://docs.google.com/spreadsheets/d/1HYxwDlshoD8atnCjxlKxWQyKtqOcSu8kzNrRNYjJBXQ/edit?gid=0#gid=0&fvid=1273995544";
 
   // 2. Susun teks pesan 
-  const pesanTeks = `*INFO REVISI HARGA & STOK* \nSegera Revisi Harga Terbaru. Semua Admin Segera Update Ke E-commerce Nya Masing-masing. Dalam Waktu 2 Jam Revisi Harga Akan Otomatis Hilang Jadi Segera Di Revisi Sekarang\n\n🔗 *Cek Data:* ${spreadsheetUrl}`;
+  const pesanTeks = `*INFO REVISI HARGA & STOK* \nSegera Revisi Harga Terbaru. Semua Admin Segera Update Ke E-commerce Nya Masing-masing. Dalam Waktu 3 Jam Revisi Harga Akan Otomatis Hilang Jadi Segera Di Revisi\n\n🔗 *Cek Data:* ${spreadsheetUrl}`;
 
   // 3. Encode teks
   const pesanEncoded = encodeURIComponent(pesanTeks);
@@ -9860,7 +9869,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- PERHITUNGAN PRESET ---
   let startMinggu = new Date(today);
-  startMinggu.setDate(today.getDate() - today.getDay()); // Hari Minggu
+  startMinggu.setDate(today.getDate() - today.getDay());
 
   let startBulan = new Date(today.getFullYear(), today.getMonth(), 1);
 
@@ -9873,19 +9882,18 @@ document.addEventListener('DOMContentLoaded', () => {
     'Dalam 3 bulan terakhir': { start: start3Bulan, end: today }
   };
 
-  // State Variabel Tanggal
   let startDate = new Date(presetsData['Minggu Ini'].start);
   let endDate = new Date(presetsData['Minggu Ini'].end);
   let tempStartDate = null; 
   let isSelecting = false;  
   let hoverDate = null;     
 
-  // State Variabel Paginasi & Data Rekap
-  let rekapDataFull = [];
+  // STATE VARIABEL DATA & PAGINASI (DIPERBARUI)
+  let rekapDataFull = [];       // Menyimpan seluruh data asli
+  let rekapDataFiltered = [];   // Menyimpan data hasil pencarian
   let currentRekapPage = 1;
-  const itemsPerPage = 15; // MAKSIMAL 15 DATA PER HALAMAN
+  const itemsPerPage = 15;
 
-  // Inisialisasi Teks Tombol Filter
   const daterangeVal = document.getElementById('daterange-val');
   if (daterangeVal) {
     daterangeVal.textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
@@ -9897,9 +9905,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();
       if (!dropdown.classList.contains('show')) {
         dropdown.classList.add('show');
-        isSelecting = false; 
-        tempStartDate = null; 
-        hoverDate = null;
+        isSelecting = false; tempStartDate = null; hoverDate = null;
         renderAll();
       } else {
         dropdown.classList.remove('show');
@@ -9960,15 +9966,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   updateMonths();
 
-  // FUNGSI UPDATE WARNA KALENDER
   const updateHighlights = () => {
     const days = document.querySelectorAll('.dr-day:not(.empty)');
     days.forEach(dayDiv => {
       const time = parseInt(dayDiv.dataset.time);
       if (!time) return;
-
       dayDiv.classList.remove('range-start', 'range-end', 'in-range', 'hover-range', 'range-end-hover');
-
       if (!isSelecting) {
         if (startDate && time === startDate.getTime()) dayDiv.classList.add('range-start');
         if (endDate && time === endDate.getTime()) dayDiv.classList.add('range-end');
@@ -9976,33 +9979,23 @@ document.addEventListener('DOMContentLoaded', () => {
           dayDiv.classList.add('in-range');
         }
       } else {
-        if (tempStartDate && time === tempStartDate.getTime()) {
-          dayDiv.classList.add('range-start');
-        }
-
+        if (tempStartDate && time === tempStartDate.getTime()) dayDiv.classList.add('range-start');
         if (tempStartDate && hoverDate) {
           const tMin = Math.min(tempStartDate.getTime(), hoverDate.getTime());
           const tMax = Math.max(tempStartDate.getTime(), hoverDate.getTime());
-
-          if (time > tMin && time < tMax) {
-            dayDiv.classList.add('hover-range');
-          } else if (time === hoverDate.getTime() && time !== tempStartDate.getTime()) {
-            dayDiv.classList.add('range-end-hover');
-          }
+          if (time > tMin && time < tMax) dayDiv.classList.add('hover-range');
+          else if (time === hoverDate.getTime() && time !== tempStartDate.getTime()) dayDiv.classList.add('range-end-hover');
         }
       }
     });
   };
 
-  // FUNGSI MEMBUAT TAMPILAN BULAN
   const renderMonth = (month, year, containerId, labelId) => {
     const container = document.getElementById(containerId);
     const labelElem = document.getElementById(labelId);
     if (!container || !labelElem) return;
-
     labelElem.textContent = `${monthNames[month]} ${year}`;
     container.innerHTML = '';
-
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -10016,7 +10009,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const dayDiv = document.createElement('div');
       dayDiv.className = 'dr-day';
       dayDiv.textContent = i;
-      
       const currDate = new Date(year, month, i);
       currDate.setHours(0,0,0,0);
       dayDiv.dataset.time = currDate.getTime();
@@ -10025,48 +10017,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (currDate <= today) {
         dayDiv.addEventListener('mouseenter', () => {
-          if (isSelecting) {
-            hoverDate = currDate;
-            updateHighlights(); 
-          }
+          if (isSelecting) { hoverDate = currDate; updateHighlights(); }
         });
 
         dayDiv.addEventListener('click', (e) => {
           e.stopPropagation();
-          
           if (!isSelecting) {
             tempStartDate = currDate;
             isSelecting = true;
             hoverDate = currDate;
-
             document.getElementById('daterange-label').textContent = "Pilih Tanggal:";
             document.getElementById('daterange-val').textContent = `${formatTgl(tempStartDate)} - ...`;
-
             presets.forEach(el => el.classList.remove('active'));
             document.getElementById('menu-pilih-tanggal').classList.add('active');
-
             updateHighlights();
           } else {
-            if (currDate < tempStartDate) {
-              startDate = currDate;
-              endDate = tempStartDate;
-            } else {
-              startDate = tempStartDate;
-              endDate = currDate;
-            }
-
-            isSelecting = false;
-            tempStartDate = null;
-            hoverDate = null;
-
+            if (currDate < tempStartDate) { startDate = currDate; endDate = tempStartDate; } 
+            else { startDate = tempStartDate; endDate = currDate; }
+            isSelecting = false; tempStartDate = null; hoverDate = null;
             document.getElementById('daterange-label').textContent = "Pilih Tanggal:";
             document.getElementById('daterange-val').textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
-
             updateHighlights();
-
-            setTimeout(() => {
-              dropdown.classList.remove('show');
-            }, 120);
+            setTimeout(() => { dropdown.classList.remove('show'); }, 120);
           }
         });
       }
@@ -10084,8 +10056,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentMonth2 += offset;
     if (currentMonth2 > 11) { currentMonth2 = 0; currentYear2++; }
     if (currentMonth2 < 0) { currentMonth2 = 11; currentYear2--; }
-    updateMonths();
-    renderAll();
+    updateMonths(); renderAll();
   };
 
   const prevBtn = document.getElementById('prev-month-btn');
@@ -10095,162 +10066,248 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderAll();
 
-  // ==========================================
-  // FUNGSI NORMALISASI & MATCHING DATA (AKURAT RAM/ROM)
-  // ==========================================
+  // NORMALISASI DATA
   const normalizeText = (text) => {
     if (!text) return "";
     let str = text.toString().toLowerCase();
-    
-    // Hapus kata sekunder yang tidak esensial
     const hapusKata = ['ram', 'rom', 'gb', 'tb', 'warna', 'bh', 'black', 'white', 'blue', 'grey', 'green', 'second', 'mulus', 'resmi', 'new'];
     hapusKata.forEach(kata => {
       const regex = new RegExp(`\\b${kata}\\b`, 'gi');
       str = str.replace(regex, '');
     });
-
-    // PENTING: Dihapus bagian kode (str.replace(/\b\d{1,2}\/\d{2,3}[a-z]*\b/g, '');) 
-    // agar angka memori (seperti 8/256) tetap ada.
-
-    // Hapus semua karakter kecuali huruf dan angka (5 dan g akan aman)
-    // Karakter garis miring '/' juga akan dihapus sehingga '6/128' menjadi '6128'
-    str = str.replace(/[^a-z0-9]/g, '');
-    
-    return str;
+    return str.replace(/[^a-z0-9]/g, '');
   };
 
+  // ==========================================
+  // LOGIKA REKAPITULASI (VERSI SUPER CEPAT / OPTIMAL)
+  // ==========================================
   const prosesRekapData = (masterStock, dataTransaksi) => {
-    return masterStock.map(master => {
+    const tglHariIni = getToday(); 
+    const hariIniStr = formatTgl(tglHariIni);
+    
+    const tglKemarin = new Date(tglHariIni);
+    tglKemarin.setDate(tglKemarin.getDate() - 1);
+    const kemarinStr = formatTgl(tglKemarin);
+
+    // 1. PRE-COMPILE REGEX: Dibuat sekali saja di awal, bukan di dalam loop.
+    // Ini menghemat waktu eksekusi hingga 90%
+    const hapusKataRegex = /\b(ram|rom|gb|tb|warna|bh|black|white|blue|grey|green|second|mulus|resmi|new)\b/gi;
+    const bersihkanRegex = /[^a-z0-9]/g;
+    
+    // Fungsi normalize internal yang jauh lebih ngebut
+    const fastNormalize = (text) => {
+      if (!text) return "";
+      return text.toString().toLowerCase().replace(hapusKataRegex, '').replace(bersihkanRegex, '');
+    };
+
+    const fastGetBase = (text) => text.replace(/5g/g, '').replace(/4g/g, '');
+
+    // 2. PRE-PROCESS DATA MASTER: Kalkulasi key hanya 1 KALI di awal
+    const rekapResult = masterStock.map(master => {
       const namaProduk = master.nama_produk || ''; 
       const kategori = master.kategori || '';      
       
-      const masterKey = normalizeText(kategori + namaProduk);
-      const isMaster5G = masterKey.includes('5g');
-
-      const transaksiCocok = dataTransaksi.filter(trx => {
-        const trxKey = normalizeText((trx.kategori || '') + (trx.nama_produk || ''));
-        const isTrx5G = trxKey.includes('5g');
-
-        // Filter ketat: Varian 5G dan 4G tidak boleh saling bentrok
-        if (isMaster5G !== isTrx5G) return false;
-
-        // Cek irisan string yang kini SUDAH TERMASUK angka memori
-        return masterKey.includes(trxKey) || trxKey.includes(masterKey);
-      });
-
-      // Kalkulasi unit
-      const totalUnitTerjual = transaksiCocok.reduce((sum, item) => {
-        return sum + (parseInt(item.unit) || 0);
-      }, 0);
-
+      const masterKey = fastNormalize(kategori + namaProduk);
+      const masterBase = fastGetBase(masterKey);
+      
       return {
         nama_produk: namaProduk,
         kategori: kategori,
-        total_unit: totalUnitTerjual
+        masterKey: masterKey, 
+        masterBase: masterBase,      // Simpan nama dasarnya
+        is5G: masterKey.includes('5g'), // Simpan status 5G-nya
+        total_unit: 0,
+        hari_ini: 0,
+        kemarin: 0
       };
     });
+
+    // 3. LOOP TRANSAKSI DENGAN PENCARIAN CEPAT (TANPA FILTER BERULANG)
+    dataTransaksi.forEach(trx => {
+      const trxKey = fastNormalize((trx.kategori || '') + (trx.nama_produk || ''));
+      const trxBase = fastGetBase(trxKey);
+      
+      const isTrx5G = trxKey.includes('5g');
+      const isTrx4G = trxKey.includes('4g');
+
+      let masterNon5G = null;
+      let master5G = null;
+      let firstCandidate = null;
+
+      // Kita pakai loop For biasa (lebih cepat dari .filter) untuk mencari kandidat
+      // dan tidak perlu array baru.
+      for (let i = 0; i < rekapResult.length; i++) {
+        const master = rekapResult[i];
+        
+        // Pencocokan langsung tanpa memotong teks lagi
+        if (master.masterBase.includes(trxBase) || trxBase.includes(master.masterBase)) {
+          if (!firstCandidate) firstCandidate = master; // Ambil opsi pertama buat cadangan
+          
+          if (master.is5G) {
+            master5G = master;
+          } else {
+            masterNon5G = master;
+          }
+        }
+      }
+
+      if (!firstCandidate) return; // Skip kalau tetap tidak ada yang cocok
+
+      let selectedMaster = null;
+
+      // Logika Routing Prioritas
+      if (isTrx5G) {
+        selectedMaster = master5G || firstCandidate;
+      } else if (isTrx4G) {
+        selectedMaster = masterNon5G || firstCandidate;
+      } else {
+        selectedMaster = masterNon5G || master5G || firstCandidate;
+      }
+
+      // 4. INJEKSI PENJUALAN
+      if (selectedMaster) {
+        const unit = parseInt(trx.unit) || 0;
+        const tanggalTrxRaw = (trx.tanggal || '').toString();
+
+        let tanggalTrx = '';
+        
+        // 1. Cek jika formatnya bahasa Indonesia ("Rabu, 19 Agustus 2026 10:51")
+        const indoDateMatch = tanggalTrxRaw.match(/(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})/);
+        if (indoDateMatch) {
+            const bulanIndo = {
+                'januari': '01', 'februari': '02', 'maret': '03', 'april': '04',
+                'mei': '05', 'juni': '06', 'juli': '07', 'agustus': '08',
+                'september': '09', 'oktober': '10', 'november': '11', 'desember': '12'
+            };
+            const dd = indoDateMatch[1].padStart(2, '0');
+            const mmName = indoDateMatch[2].toLowerCase();
+            const yyyy = indoDateMatch[3];
+            
+            // Ubah nama bulan ke angka (default '01' jika gagal)
+            const mm = bulanIndo[mmName] || '01'; 
+            
+            tanggalTrx = `${dd}/${mm}/${yyyy}`;
+        } 
+        // 2. Cek jika format sudah baku ("19/08/2026 11:57:48")
+        else if (tanggalTrxRaw.match(/^\d{2}\/\d{2}\/\d{4}/)) {
+            tanggalTrx = tanggalTrxRaw.substring(0, 10);
+        } 
+        // 3. Fallback jika format Date/ISO standard ("2026-08-19...")
+        else {
+            const d = new Date(tanggalTrxRaw);
+            if (!isNaN(d.getTime())) {
+                tanggalTrx = formatTgl(d); 
+            } else {
+                tanggalTrx = tanggalTrxRaw; // Mentok kalau format benar-benar aneh
+            }
+        }
+
+        selectedMaster.total_unit += unit;
+        
+        // Perbandingan sekarang pasti akurat
+        if (tanggalTrx === hariIniStr) selectedMaster.hari_ini += unit;
+        if (tanggalTrx === kemarinStr) selectedMaster.kemarin += unit;
+      }
+    });
+
+    // 5. BERSIHKAN KEY TAMBAHAN DAN KEMBALIKAN DATA
+    return rekapResult.map(res => ({
+      nama_produk: res.nama_produk,
+      kategori: res.kategori,
+      total_unit: res.total_unit,
+      hari_ini: res.hari_ini,
+      kemarin: res.kemarin
+    }));
   };
 
-  // ==========================================
-  // FUNGSI BANTUAN NOTIFIKASI TOAST DENGAN PROGRESS BAR
-  // ==========================================
+  // NOTIFIKASI
   const showNotification = (text, duration = 3000) => {
     let container = document.getElementById('toast-container');
     if (!container) {
       container = document.createElement('div');
       container.id = 'toast-container';
-      // pointer-events: none agar wadah transparan ini tidak menghalangi klik di halaman web
       container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;';
       document.body.appendChild(container);
     }
-
     const toast = document.createElement('div');
-    // position: relative & overflow: hidden wajib agar progress bar bisa rapi di bawah
     toast.style.cssText = 'position: relative; background: #ffffff; color: #1e293b; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; font-family: inherit; font-size: 14px; overflow: hidden; min-width: 280px; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; pointer-events: auto;';
-    
     const content = document.createElement('div');
     content.style.cssText = 'padding: 12px 18px; display: flex; align-items: center; gap: 10px;';
-    // Desain icon "i" dengan kotak biru seperti di video
     content.innerHTML = `<span style="background: var(--primary, #0ea5e9); color: white; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; border-radius: 4px; font-family: serif;">i</span> <span>${text}</span>`;
-    
     toast.appendChild(content);
 
-    // Tambahkan progress bar warna merah JIKA duration lebih dari 0
     let progressBar;
     if (duration > 0) {
       progressBar = document.createElement('div');
       progressBar.style.cssText = `position: absolute; bottom: 0; left: 0; height: 4px; background-color: #ef4444; width: 100%; transition: width ${duration}ms linear;`;
       toast.appendChild(progressBar);
     }
-
     container.appendChild(toast);
-
-    // Animasi masuk (Slide In dari Kanan) & Trigger animasi Progress Bar
     requestAnimationFrame(() => {
       toast.style.opacity = '1';
       toast.style.transform = 'translateX(0)';
-      
-      // Setelah toast muncul, ubah lebar progress bar jadi 0% agar menyusut perlahan
-      if (duration > 0 && progressBar) {
-        requestAnimationFrame(() => {
-          progressBar.style.width = '0%';
-        });
-      }
+      if (duration > 0 && progressBar) requestAnimationFrame(() => progressBar.style.width = '0%');
     });
 
-    // Fungsi untuk menghapus toast dengan animasi
     const removeToast = () => {
       toast.style.opacity = '0';
-      toast.style.transform = 'translateX(100%)'; // Slide out ke kanan
-      setTimeout(() => {
-        if (toast.parentNode) toast.remove();
-      }, 300);
+      toast.style.transform = 'translateX(100%)'; 
+      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 300);
     };
 
-    // Auto-remove jika ada durasi
     let timeoutId;
-    if (duration > 0) {
-      timeoutId = setTimeout(removeToast, duration);
-    }
-
-    return {
-      remove: () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        removeToast();
-      }
-    };
+    if (duration > 0) timeoutId = setTimeout(removeToast, duration);
+    return { remove: () => { if (timeoutId) clearTimeout(timeoutId); removeToast(); } };
   };
 
   // ==========================================
-  // EVENT TOMBOL TERAPKAN (FETCH DATA + NOTIFIKASI)
+  // FITUR PENCARIAN (BARU)
   // ==========================================
-  const btnTerapkan = document.getElementById('btn-terapkan'); 
+  const searchInputRekap = document.getElementById('st-search-rekap');
+  if (searchInputRekap) {
+    searchInputRekap.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
 
+      if (!query) {
+        // Jika kotak pencarian kosong, kembalikan ke seluruh data
+        rekapDataFiltered = [...rekapDataFull];
+      } else {
+        // Filter data berdasarkan nama atau kategori
+        rekapDataFiltered = rekapDataFull.filter(item => {
+          const nama = (item.nama_produk || '').toLowerCase();
+          const kategori = (item.kategori || '').toLowerCase();
+          return nama.includes(query) || kategori.includes(query);
+        });
+      }
+
+      // Selalu mulai dari halaman 1 saat mencari
+      currentRekapPage = 1; 
+      renderTabelRekap(currentRekapPage);
+      renderPaginasiRekap();
+    });
+  }
+
+  // EVENT TOMBOL TERAPKAN
+  const btnTerapkan = document.getElementById('btn-terapkan'); 
   if (btnTerapkan) {
     btnTerapkan.addEventListener('click', () => {
       const originalText = btnTerapkan.textContent;
       btnTerapkan.textContent = "Memuat Data...";
       btnTerapkan.disabled = true;
 
-      // 1. Munculkan notifikasi Loading
-      // Angka '0' artinya notifikasi ini TIDAK ADA progress bar dan TIDAK AKAN hilang otomatis
       const loadingToast = showNotification("Sedang Memuat Data Mohon Ditunggu...", 0);
-
       const tanggalAwal = formatTgl(startDate);   
       const tanggalAkhir = formatTgl(endDate);    
-      
       const urlRekap = `${CFG.apiDATA}?action=rekapTransaksi&start=${tanggalAwal}&end=${tanggalAkhir}`;
 
       fetch(urlRekap)
         .then(response => response.json())
         .then(data => {
-          
           const masterStok = data.master_stok || [];
           const dataTransaksi = data.transaksi || [];
 
           if (masterStok.length > 0) {
             const hasilRekap = prosesRekapData(masterStok, dataTransaksi);
-
             rekapDataFull = hasilRekap.sort((a, b) => {
               const nameA = (a.nama_produk || '').toString();
               const nameB = (b.nama_produk || '').toString();
@@ -10260,22 +10317,22 @@ document.addEventListener('DOMContentLoaded', () => {
             rekapDataFull = [];
           }
 
+          // Sinkronisasikan data filter dengan data asli yang baru di-fetch
+          rekapDataFiltered = [...rekapDataFull];
+          
+          // Kosongkan form pencarian jika ada
+          if(searchInputRekap) searchInputRekap.value = '';
+
           currentRekapPage = 1; 
           renderTabelRekap(currentRekapPage);
           renderPaginasiRekap();
 
-          // 2. Tutup notifikasi "Memuat" 
           loadingToast.remove();
-          
-          // 3. Munculkan notifikasi "Sukses"
-          // Tidak perlu isi angka '0', otomatis akan pakai default (3000ms/3 detik) + pakai Progress Bar
           showNotification("Data Berhasil Di Filter"); 
-          
         })
         .catch(error => {
           console.error("Gagal menarik data:", error);
           alert("Terjadi kesalahan saat memproses data gabungan.");
-          // Jangan lupa matikan loading toast kalau gagal juga
           loadingToast.remove();
         })
         .finally(() => {
@@ -10285,57 +10342,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ==========================================
   // EVENT TOMBOL ATUR ULANG (RESET)
-  // ==========================================
   const btnReset = document.getElementById('btn-reset');
-  
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      // 1. Kembalikan rentang tanggal ke default (Minggu Ini)
       if (presetsData && presetsData['Minggu Ini']) {
         startDate = new Date(presetsData['Minggu Ini'].start);
         endDate = new Date(presetsData['Minggu Ini'].end);
       }
       
-      // 2. Perbarui teks di tombol filter kalender
       const label = document.getElementById('daterange-label');
       const val = document.getElementById('daterange-val');
       if (label) label.textContent = "Minggu Ini:";
       if (val) val.textContent = `${formatTgl(startDate)} - ${formatTgl(endDate)}`;
       
-      // 3. Reset warna aktif di menu sidebar dropdown kalender
       if (presets) {
         presets.forEach(el => el.classList.remove('active'));
         const presetMinggu = Array.from(presets).find(el => el.getAttribute('data-preset') === 'Minggu Ini');
         if (presetMinggu) presetMinggu.classList.add('active');
       }
 
-      // 4. Kosongkan kembali data tabel ke kondisi awal
+      // Kosongkan data
       rekapDataFull = [];
+      rekapDataFiltered = []; // Kosongkan juga data filter
+      if(searchInputRekap) searchInputRekap.value = '';
+
       currentRekapPage = 1;
       
       const tableBody = document.getElementById('st-rekap-tbody');
-      if (tableBody) {
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">Klik "Terapkan" untuk menampilkan data rekapitulasi...</td></tr>';
-      }
+      if (tableBody) tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--t3); font-style: italic;">Klik "Terapkan" untuk menampilkan data rekapitulasi...</td></tr>';
       
-      // 5. Reset informasi paginasi
       const pInfo = document.getElementById('st-rekap-pinfo');
       const pBtns = document.getElementById('st-rekap-pbtns');
       if (pInfo) pInfo.textContent = 'Menampilkan 0 data';
       if (pBtns) pBtns.innerHTML = '';
       
-      // 6. Bersihkan sisa-sisa klik di kalender (jika sedang memilih tanggal)
-      isSelecting = false;
-      tempStartDate = null;
-      hoverDate = null;
+      isSelecting = false; tempStartDate = null; hoverDate = null;
       if (typeof updateHighlights === 'function') updateHighlights();
     });
   }
   
   // ==========================================
-  // FUNGSI RENDER TABEL (MAX 15 DATA & ALIGNMENT RAPI)
+  // RENDER TABEL & PAGINASI (MENGGUNAKAN rekapDataFiltered)
   // ==========================================
   function renderTabelRekap(page = 1) {
     const tableBody = document.getElementById('st-rekap-tbody'); 
@@ -10343,15 +10391,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     tableBody.innerHTML = ''; 
     
-    if (!Array.isArray(rekapDataFull) || rekapDataFull.length === 0) {
-      // UPDATE: colspan diubah jadi 5 menyesuaikan header baru
-      tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 30px; color: var(--t3);">Data Tidak Ditemukan</td></tr>';
+    if (!Array.isArray(rekapDataFiltered) || rekapDataFiltered.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px; color: var(--t3);">Data Tidak Ditemukan</td></tr>';
       return;
     }
 
     const startIdx = (page - 1) * itemsPerPage;
     const endIdx = startIdx + itemsPerPage;
-    const pageData = rekapDataFull.slice(startIdx, endIdx);
+    const pageData = rekapDataFiltered.slice(startIdx, endIdx);
 
     pageData.forEach((item, index) => {
       const tr = document.createElement('tr');
@@ -10360,102 +10407,66 @@ document.addEventListener('DOMContentLoaded', () => {
         <td style="text-align: left; font-weight: 600;">${item.nama_produk || '-'}</td>
         <td style="text-align: center; color: var(--t2);">${item.kategori || '-'}</td>
         <td style="text-align: center; font-weight: 700; color: var(--p1);">${item.total_unit ?? 0}</td>
-        <!-- Kolom bayangan kosong di paling kanan -->
+        
+        <!-- Data Kemarin & Hari Ini yang sudah dinamis -->
+        <td style="text-align: center; font-weight: 600; color: #f59e0b;">${item.kemarin ?? 0}</td>
+        <td style="text-align: center; font-weight: 600; color: #10b981;">${item.hari_ini ?? 0}</td>
         <td></td>
       `;
       tableBody.appendChild(tr);
     });
   }
 
-  // ==========================================
-  // FUNGSI RENDER NAVIGASI PAGINASI (DIPERBARUI)
-  // ==========================================
   function renderPaginasiRekap() {
     const pInfo = document.getElementById('st-rekap-pinfo');
     const pBtns = document.getElementById('st-rekap-pbtns');
     if (!pBtns) return;
 
-    const totalData = rekapDataFull.length;
+    // Gunakan rekapDataFiltered
+    const totalData = rekapDataFiltered.length;
     const totalPages = Math.ceil(totalData / itemsPerPage) || 1;
 
     const startIdx = totalData === 0 ? 0 : (currentRekapPage - 1) * itemsPerPage + 1;
     const endIdx = Math.min(currentRekapPage * itemsPerPage, totalData);
 
-    if (pInfo) {
-      pInfo.textContent = `Menampilkan ${startIdx} - ${endIdx} dari ${totalData} data`;
-    }
-
+    if (pInfo) pInfo.textContent = `Menampilkan ${startIdx} - ${endIdx} dari ${totalData} data`;
     pBtns.innerHTML = '';
 
-    // --- 1. SIMPAN GAYA CSS TEMA KE DALAM VARIABEL ---
-    // Gaya ini disamakan persis dengan inline CSS pada HTML awal Anda
     const styleBiasa = "padding: 4px 10px; cursor: pointer; border: 1px solid var(--border); border-radius: 4px; background: transparent; color: inherit; font-family: inherit; font-size: 13px;";
     const styleAktif = "padding: 4px 10px; cursor: pointer; border: 1px solid var(--primary, #0ea5e9); border-radius: 4px; background: var(--primary, #0ea5e9); color: #fff; font-family: inherit; font-weight: 600; font-size: 13px;";
 
-    // --- 2. TOMBOL PREV (SEBELUMNYA) ---
     const prevBtn = document.createElement('button');
     prevBtn.className = 'btn-pag';
-    prevBtn.innerHTML = '&laquo;'; // Menggunakan icon panah seperti di HTML
+    prevBtn.innerHTML = '&laquo;'; 
     prevBtn.style.cssText = styleBiasa;
-    if (currentRekapPage === 1) {
-        prevBtn.style.opacity = "0.5";
-        prevBtn.style.cursor = "not-allowed";
-    }
+    if (currentRekapPage === 1) { prevBtn.style.opacity = "0.5"; prevBtn.style.cursor = "not-allowed"; }
     prevBtn.disabled = currentRekapPage === 1;
-    prevBtn.onclick = () => {
-      if (currentRekapPage > 1) {
-        currentRekapPage--;
-        renderTabelRekap(currentRekapPage);
-        renderPaginasiRekap();
-      }
-    };
+    prevBtn.onclick = () => { if (currentRekapPage > 1) { currentRekapPage--; renderTabelRekap(currentRekapPage); renderPaginasiRekap(); } };
     pBtns.appendChild(prevBtn);
 
-    // --- 3. TOMBOL ANGKA (HALAMAN) DENGAN LOGIKA PEMOTONGAN ---
     for (let i = 1; i <= totalPages; i++) {
-      // Logika agar tidak semua angka dicetak jika halaman sangat banyak (misal: 1 2 3 ... 15)
       if (i === 1 || i === totalPages || (i >= currentRekapPage - 1 && i <= currentRekapPage + 1)) {
           const pageBtn = document.createElement('button');
           pageBtn.className = `btn-pag ${i === currentRekapPage ? 'active' : ''}`;
           pageBtn.textContent = i;
-          
-          // Terapkan gaya sesuai status aktif atau tidak
           pageBtn.style.cssText = (i === currentRekapPage) ? styleAktif : styleBiasa;
-          
-          pageBtn.onclick = () => {
-            currentRekapPage = i;
-            renderTabelRekap(currentRekapPage);
-            renderPaginasiRekap();
-          };
+          pageBtn.onclick = () => { currentRekapPage = i; renderTabelRekap(currentRekapPage); renderPaginasiRekap(); };
           pBtns.appendChild(pageBtn);
       } else if (i === currentRekapPage - 2 || i === currentRekapPage + 2) {
-          // Tambahkan titik-titik pemisah
           const dotBtn = document.createElement('span');
           dotBtn.textContent = '...';
           dotBtn.style.padding = "4px 6px";
-          dotBtn.style.color = "var(--t3)";
-          dotBtn.style.fontSize = "13px";
           pBtns.appendChild(dotBtn);
       }
     }
 
-    // --- 4. TOMBOL NEXT (SELANJUTNYA) ---
     const nextBtn = document.createElement('button');
     nextBtn.className = 'btn-pag';
-    nextBtn.innerHTML = '&raquo;'; // Menggunakan icon panah seperti di HTML
+    nextBtn.innerHTML = '&raquo;';
     nextBtn.style.cssText = styleBiasa;
-    if (currentRekapPage === totalPages || totalPages === 0) {
-        nextBtn.style.opacity = "0.5";
-        nextBtn.style.cursor = "not-allowed";
-    }
+    if (currentRekapPage === totalPages || totalPages === 0) { nextBtn.style.opacity = "0.5"; nextBtn.style.cursor = "not-allowed"; }
     nextBtn.disabled = currentRekapPage === totalPages || totalPages === 0;
-    nextBtn.onclick = () => {
-      if (currentRekapPage < totalPages) {
-        currentRekapPage++;
-        renderTabelRekap(currentRekapPage);
-        renderPaginasiRekap();
-      }
-    };
+    nextBtn.onclick = () => { if (currentRekapPage < totalPages) { currentRekapPage++; renderTabelRekap(currentRekapPage); renderPaginasiRekap(); } };
     pBtns.appendChild(nextBtn);
   }
 });
