@@ -3785,7 +3785,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbwCIzW_wPPxoZONqayoKHRaTHuVdDGxyXQJReI3j9Xb1sE8Koe5TZHIwy-lX7B0t7sxJA/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbyeL0fIwkwgHdNeLCZwdF-MGWFv16MLIDJJBebPkMJFrKvZtRteLwi_Le6nNjncSW1Jag/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -5317,10 +5317,7 @@ const tempExcelData = {}; // Simpan data excel sementara
 let isProcessing = false; // Kunci untuk mencegah upload dobel
 
 // ==========================================
-// LOGIKA UPLOAD & EFEK SHOPEE UI
-// ==========================================
-// ==========================================
-// LOGIKA UPLOAD (DENGAN PENANGANAN SCOPE & ERROR CORRECTIONS)
+// LOGIKA UPLOAD & EFEK
 // ==========================================
 function handleFileUpload(event) {
   if (isProcessing) {
@@ -5498,12 +5495,12 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
 
     let realData = await apiGet(CFG.apiDATA, CFG.sheetStock);
 
+    // PERUBAHAN: Menghapus properti 'Stok: 0' yang tidak diperlukan
     const databaseSpreadsheet = realData.map(item => ({
        IdProduk: item['Id Produk'] || item['ID Produk'] || item['id produk'],
        Kategori: item['Kategori'] || item['kategori'],
        NamaProduk: item['Nama Produk'] || item['nama produk'],
-       NamaVariasi: item['Variasi'] || item['variasi'] || '',
-       Stok: 0
+       NamaVariasi: item['Variasi'] || item['variasi'] || ''
     }));
 
     tdAction.innerHTML = `<span style="color:#2563eb;">2/3 Memproses pencocokan...</span>`;
@@ -5517,8 +5514,10 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
         if(tipeProduk) {
            let hasilCocok = cariDataSpreadsheet(merkKategori, tipeProduk, databaseSpreadsheet);
            if (hasilCocok) {
+               // PERUBAHAN: Mengirim 2 nilai stok (Stok Lama dan Stok Baru) dengan nilai Saldo Akhir yang sama
                daftarUpdate.push({
                    IdProduk: hasilCocok.IdProduk,
+                   StokLama: saldoAkhir,
                    StokBaru: saldoAkhir
                });
            }
@@ -5564,8 +5563,7 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
             if(typeof renderStRiwayat === 'function') renderStRiwayat();
         } catch (errRiwayat) {}
 
-        // PERHATIKAN: Saya hapus location.reload() agar tabel Anda tidak hilang
-
+        // PERHATIKAN: location.reload() tetap dihapus sesuai permintaan
     } else {
         throw new Error(result.error || "Gagal menyimpan ke Sheet.");
     }
@@ -5578,7 +5576,7 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
     if (error.message === "TIDAK_ADA_COCOK") {
         tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">Data tidak cocok</span>`;
     } else {
-        tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">Error Sistem</span>`;
+        tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">${error.message}</span>`;
     }
   } finally {
     isProcessing = false;
@@ -5589,6 +5587,7 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
     document.getElementById('mu-file-label').innerText = 'Letakkan file Excel di sini';
   }
 }
+
 /* ═══════════════════════════════════════════════════════════
    ██████  PERFORMA ADMIN MODULE (ISOLATED FILTER)  ██████
 ═══════════════════════════════════════════════════════════ */
