@@ -5480,13 +5480,12 @@ function cariDataSpreadsheet(excelKategori, excelTipe, dbSpreadsheet) {
 }
 
 // ==========================================
-// 3. PROSES UPDATE KETIKA TOMBOL DIKLIK (VIA API)
+// 3. PROSES UPDATE KETIKA TOMBOL DIKLIK (BERDASARKAN NAMA PRODUK)
 // ==========================================
 async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
   const dataExcel = tempExcelData[fileId];
   const fileNamaAsli = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : "REKAP EXCEL";
   
-  // Ambil elemen tabel untuk diupdate secara realtime
   const tdProgress = document.getElementById(`progress-${fileId}`);
   const tdAction = document.getElementById(`action-${fileId}`);
   
@@ -5495,11 +5494,10 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
 
     let realData = await apiGet(CFG.apiDATA, CFG.sheetStock);
 
-    // PERUBAHAN: Menghapus properti 'Stok: 0' yang tidak diperlukan
+    // Murni mengambil Nama Produk dari Sheet STOCK
     const databaseSpreadsheet = realData.map(item => ({
-       IdProduk: item['Id Produk'] || item['ID Produk'] || item['id produk'],
-       Kategori: item['Kategori'] || item['kategori'],
-       NamaProduk: item['Nama Produk'] || item['nama produk'],
+       NamaProduk: item['Nama Produk'] || item['nama produk'] || item['NAMA PRODUK'] || '',
+       Kategori: item['Kategori'] || item['kategori'] || '',
        NamaVariasi: item['Variasi'] || item['variasi'] || ''
     }));
 
@@ -5514,9 +5512,9 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
         if(tipeProduk) {
            let hasilCocok = cariDataSpreadsheet(merkKategori, tipeProduk, databaseSpreadsheet);
            if (hasilCocok) {
-               // PERUBAHAN: Mengirim 2 nilai stok (Stok Lama dan Stok Baru) dengan nilai Saldo Akhir yang sama
+               // Kirim menggunakan acuan Nama Produk
                daftarUpdate.push({
-                   IdProduk: hasilCocok.IdProduk,
+                   NamaProduk: hasilCocok.NamaProduk,
                    StokLama: saldoAkhir,
                    StokBaru: saldoAkhir
                });
@@ -5541,11 +5539,9 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
     let result = await postResponse.json();
 
     if(result.success) {
-        // --- JIKA SUKSES (TAMPILAN ALA SHOPEE) ---
         tdProgress.innerHTML = `<span style="color:#16a34a; font-weight:bold;">${result.updated}/${totalBarisExcel}</span>`;
         tdAction.innerHTML = `<button onclick="alert('File sudah selesai diproses!')" style="color:#ea580c; border: 1px solid #ea580c; background: transparent; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Selesai</button>`;
 
-        // Catat ke server (Background process)
         try {
             await apiPost(CFG.apiDATA, {
                 Tanggal: nowFmt(),
@@ -5557,19 +5553,16 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
                 HargaTerbaru: '-'
             }, CFG.sheetRiwayat);
             
-            // Opsional: Coba render ulang tabel riwayat utama (jika ada di luar modal)
             const rwNew = await apiGet(CFG.apiDATA, CFG.sheetRiwayat);
             if(rwNew && Array.isArray(rwNew)) S.st.riwayat = rwNew.reverse();
             if(typeof renderStRiwayat === 'function') renderStRiwayat();
         } catch (errRiwayat) {}
 
-        // PERHATIKAN: location.reload() tetap dihapus sesuai permintaan
     } else {
         throw new Error(result.error || "Gagal menyimpan ke Sheet.");
     }
 
   } catch (error) {
-    // --- JIKA GAGAL ---
     console.error("ERROR MASS UPDATE:", error);
     tdProgress.innerHTML = `<span style="color:#ef4444; font-weight:bold;">0/${totalBarisExcel}</span>`;
     
