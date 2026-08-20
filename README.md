@@ -2221,6 +2221,76 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
   background: var(--dr-light); border-radius: 0;
 }
 
+/* CSS KHUSUS MODAL MASS UPDATE (TEMA DASHBOARD) */
+.modal-overlay {
+  display: none; 
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Pembungkus tabel agar bisa di-scroll ke samping jika kepanjangan */
+.mu-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+}
+
+.mu-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  white-space: nowrap; /* Mencegah teks turun ke bawah / terpotong */
+}
+
+.mu-table th, .mu-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.mu-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #444;
+}
+
+.mu-table tbody tr:hover {
+  background: #fbfbfb;
+}
+
+/* Label Status */
+.badge-success { background: #d1e7dd; color: #0f5132; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+.badge-warning { background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+
+/* Tombol Download Gagal */
+.btn-dl-gagal {
+  color: #dc3545;
+  background: #ffebe8;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+  display: inline-block;
+  transition: 0.2s;
+}
+.btn-dl-gagal:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
 </style>
 </head>
 <body>
@@ -2446,16 +2516,16 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
           <div class="search-wrap">
             <input type="search" class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." onkeydown="if(event.key === 'Enter') stFilter()" oninput="if(this.value === '') stFilter()" style="min-width: 200px; padding-right: 12px;">
           </div>
-          <button class="btn btn-primary btn-sm" onclick="stOpenAdd()">
-            + Tambah
+          <button class="btn btn-primary btn-sm" onclick="openMassUpdate()">
+            Mass Update
           </button>
         </div>
+      
+      </div> 
 
-      </div>
       <div class="card" style="padding:0;overflow:hidden">
         <div class="tbl-scroll">
-      <table class="premium-table">
-          <thead>
+          <table class="premium-table">
             <thead>
               <tr>
                 <th>ID</th><th>Nama Produk</th><th>Variasi</th>
@@ -2473,8 +2543,9 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
           <div class="pag-btns" id="st-pbtns"></div>
         </div>
       </div>
-    </div>
- 
+    </div> 
+
+
     <div class="page" id="page-st-add">
       <div class="card cp" style="max-width:860px">
        <div class="sec-hd st-head-edit">
@@ -2522,6 +2593,76 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
         </div>
       </div>
     </div>
+
+    <!-- POP-UP MASS UPDATE -->
+<div class="modal-overlay" id="page-mass-update">
+  
+  <div class="card cp" style="max-width: 950px; width: 95%; background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 90vh; overflow-y: auto;">
+    
+    <!-- Header Modal -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eaeaea; padding-bottom: 16px; margin-bottom: 20px;">
+      <div>
+        <h2 style="margin: 0 0 4px 0; font-size: 18px; color: #333; font-weight: 600;">Upload Mass Update</h2>
+        <p style="margin: 0; font-size: 13px; color: #666;">Mohon upload file Excel yang sudah lengkap untuk memperbarui data.</p>
+      </div>
+      <button onclick="closeMassUpdate()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: #999;">✕</button>
+    </div>
+
+    <!-- Konten Utama -->
+    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+      
+      <!-- Kolom Upload (Kiri) -->
+      <div style="flex: 1; min-width: 280px;">
+        <div style="border: 2px dashed #cbd5e1; padding: 40px 20px; text-align: center; border-radius: 8px; background: #f8fafc; margin-bottom: 16px;">
+          <div style="font-size: 32px; margin-bottom: 12px;">📁</div>
+    <p style="margin: 0 0 16px 0; font-weight: 600; font-size: 14px; color: #333;" id="mu-file-label">Letakkan file Excel di sini</p>
+    <!-- Input file tersembunyi untuk memicu dialog dokumen sistem -->
+  <input type="file" id="mu-file-input" accept=".xlsx, .xls" style="display: none;" onchange="handleFileUpload(event)">
+    <!-- Tombol yang memanggil input file saat diklik -->
+      <button type="button" class="btn btn-primary" onclick="document.getElementById('mu-file-input').click()" style="padding: 8px 24px; border-radius: 6px;">
+      Pilih File
+    </button>
+  </div>
+  
+  <ul style="font-size: 12px; color: #666; padding-left: 16px; margin: 0; line-height: 1.6;">
+    <li style="margin-bottom: 6px;">Ukuran maks. 3MB. Gunakan format <b>.xlsx</b> atau <b>.xls</b>.</li>
+    <li style="margin-bottom: 6px;">Pastikan data di dalam file sesuai dengan format yang berlaku.</li>
+    <li>Mohon tidak menutup halaman sebelum proses selesai.</li>
+  </ul>
+</div>
+
+      <!-- Kolom Tabel (Kanan) -->
+      <div style="flex: 1.5; min-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+           <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #333;">Riwayat Dokumen</h3>
+           <span style="font-size: 12px; color: #888;">Disimpan selama 30 hari terakhir</span>
+        </div>
+        
+        <!-- Pembungkus Tabel dengan overflow-x: auto -->
+        <div class="mu-table-wrap">
+          <table class="mu-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Jenis File</th>
+                <th>Nama File</th>
+                <th>Telah diproses</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <!-- ID ini siap diisi data dinamis dari JavaScript Anda -->
+            <tbody id="mu-tbody">
+               <!-- Baris data di-generate dari JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- HALAMAN REKAPITULASI -->
     <div class="page" id="page-st-rekap">
@@ -3644,7 +3785,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbyGuUuIl-mvgPy6hq1wHwnLh89lxe1otZCuAXklsdr7q24ZfDqFr-ieX37vs9peVsxAoQ/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwCIzW_wPPxoZONqayoKHRaTHuVdDGxyXQJReI3j9Xb1sE8Koe5TZHIwy-lX7B0t7sxJA/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -5151,7 +5292,303 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
- 
+
+// ==========================================
+// VARIABEL GLOBAL & POP-UP MASS UPDATE
+// ==========================================
+function openMassUpdate() {
+  const modal = document.getElementById('page-mass-update');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeMassUpdate() {
+  const modal = document.getElementById('page-mass-update');
+  if (modal) modal.style.display = 'none';
+  
+  const fileInput = document.getElementById('mu-file-input');
+  if (fileInput) fileInput.value = '';
+  document.getElementById('mu-file-label').innerText = 'Letakkan file Excel di sini';
+}
+
+window.openMassUpdate = openMassUpdate;
+window.closeMassUpdate = closeMassUpdate;
+
+const tempExcelData = {}; // Simpan data excel sementara
+let isProcessing = false; // Kunci untuk mencegah upload dobel
+
+// ==========================================
+// LOGIKA UPLOAD & EFEK SHOPEE UI
+// ==========================================
+// ==========================================
+// LOGIKA UPLOAD (DENGAN PENANGANAN SCOPE & ERROR CORRECTIONS)
+// ==========================================
+function handleFileUpload(event) {
+  if (isProcessing) {
+    alert("Harap tunggu, sistem sedang memproses file sebelumnya!");
+    return;
+  }
+
+  const fileInput = event.target;
+  const file = fileInput.files[0];
+
+  if (!file) return;
+
+  // Validasi ukuran file (maksimal 3MB)
+  if (file.size > 3 * 1024 * 1024) {
+    alert("Ukuran file terlalu besar! Maksimal 3MB.");
+    fileInput.value = '';
+    return;
+  }
+
+  isProcessing = true; 
+  fileInput.disabled = true; 
+  document.getElementById('mu-file-label').innerText = `📄 ${file.name} (Memproses...)`;
+
+  const fileId = Date.now().toString();
+  tambahkanKeTabel(file.name, fileId);
+
+  // Deklarasi reader berada di scope fungsi utama
+  const reader = new FileReader();
+
+  reader.onerror = function() {
+    handleUploadError(fileId, fileInput, "Gagal membaca file dari komputer.");
+  };
+
+  reader.onload = function(e) {
+    try {
+      if (typeof XLSX === 'undefined') {
+        throw new Error("Library SheetJS (XLSX) belum dimuat di HTML!");
+      }
+
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonExcel = XLSX.utils.sheet_to_json(worksheet);
+
+      if (!jsonExcel || jsonExcel.length === 0) {
+        throw new Error("File Excel kosong atau format tidak valid.");
+      }
+
+      tempExcelData[fileId] = jsonExcel;
+      const totalBarisExcel = jsonExcel.length;
+
+      document.getElementById(`progress-${fileId}`).innerHTML = `<span style="color:#888; font-weight:bold;">0/${totalBarisExcel}</span>`;
+      document.getElementById(`action-${fileId}`).innerHTML = `<span style="color:#d97706;">Mencocokkan data...</span>`;
+
+      setTimeout(() => {
+        prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel);
+      }, 300);
+
+    } catch (err) {
+      handleUploadError(fileId, fileInput, err.message);
+    }
+  };
+
+  // Pemanggilan reader berada di dalam scope variabel yang benar
+  reader.readAsArrayBuffer(file);
+}
+
+// Fungsi pembantu penanganan error upload
+function handleUploadError(fileId, fileInput, pesanError) {
+  console.error("Detail Error Excel:", pesanError);
+  const tdProgress = document.getElementById(`progress-${fileId}`);
+  const tdAction = document.getElementById(`action-${fileId}`);
+
+  if (tdProgress) tdProgress.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Gagal</span>`;
+  if (tdAction) tdAction.innerHTML = `<span style="color:#ef4444; font-size:11px;">${pesanError}</span>`;
+
+  isProcessing = false;
+  if (fileInput) {
+    fileInput.disabled = false;
+    fileInput.value = '';
+  }
+  document.getElementById('mu-file-label').innerText = 'Letakkan file Excel di sini';
+}
+
+// ==========================================
+// FUNGSI RENDER BARIS TABEL (MUNCUL OTOMATIS)
+// ==========================================
+function tambahkanKeTabel(namaFile, fileId) {
+  const tbody = document.getElementById('mu-tbody');
+  
+  // Format Tanggal ala Shopee (DD/MM/YYYY HH:MM)
+  const now = new Date();
+  const tgl = String(now.getDate()).padStart(2, '0') + '/' + 
+              String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+              now.getFullYear() + ' ' + 
+              String(now.getHours()).padStart(2, '0') + ':' + 
+              String(now.getMinutes()).padStart(2, '0');
+
+  const tr = document.createElement('tr');
+  tr.id = `row-${fileId}`;
+  
+  // 5 Kolom: Tanggal | Jenis File | Nama File | Telah diproses | Aksi
+  tr.innerHTML = `
+    <td>${tgl}</td>
+    <td>Informasi Dasar</td>
+    <td>${namaFile}</td>
+    <td id="progress-${fileId}"><span style="color:#888;">Menyiapkan...</span></td>
+    <td id="action-${fileId}"><span style="color:#888;">Menunggu...</span></td>
+  `;
+  
+  // Masukkan ke urutan paling atas
+  tbody.prepend(tr);
+}
+
+// ==========================================
+// 1. FUNGSI PEMECAH KATA (TOKENIZER)
+// ==========================================
+function pecahKeKata(teks) {
+  if (!teks) return [];
+  let bersih = String(teks).toLowerCase();
+  bersih = bersih.replace(/\+/g, ' plus '); 
+  bersih = bersih.replace(/\//g, ' '); 
+  bersih = bersih.replace(/\b(ram|rom|gb)\b/g, ''); 
+  bersih = bersih.replace(/[^a-z0-9\s]/g, ' '); 
+  
+  return bersih.split(/\s+/).filter(kata => kata.length > 0);
+}
+
+// ==========================================
+// 2. LOGIKA CERDAS PENCOCOKAN
+// ==========================================
+function cariDataSpreadsheet(excelKategori, excelTipe, dbSpreadsheet) {
+  const kataExcel = pecahKeKata(excelTipe);
+  const cekAda5GDiExcel = kataExcel.includes('5g');
+
+  let kandidat = dbSpreadsheet.filter(db => {
+    let katDB = String(db.Kategori || "").toLowerCase().trim();
+    let katExcel = String(excelKategori || "").toLowerCase().trim();
+    
+    if (katDB !== katExcel) return false; 
+
+    const kataDB = pecahKeKata(db.NamaProduk + " " + db.NamaVariasi);
+    return kataExcel.every(kata => kataDB.includes(kata));
+  });
+
+  if (kandidat.length === 1) return kandidat[0];
+  else if (kandidat.length > 1) {
+    if (!cekAda5GDiExcel) {
+      let kandidatTanpa5G = kandidat.filter(k => {
+        let kataDB = pecahKeKata(k.NamaProduk + " " + k.NamaVariasi);
+        return !kataDB.includes('5g');
+      });
+      if (kandidatTanpa5G.length > 0) return kandidatTanpa5G[0]; 
+    } else {
+      return kandidat[0];
+    }
+    return kandidat[0]; 
+  }
+  return null; 
+}
+
+// ==========================================
+// 3. PROSES UPDATE KETIKA TOMBOL DIKLIK (VIA API)
+// ==========================================
+async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
+  const dataExcel = tempExcelData[fileId];
+  const fileNamaAsli = fileInput.files && fileInput.files[0] ? fileInput.files[0].name : "REKAP EXCEL";
+  
+  // Ambil elemen tabel untuk diupdate secara realtime
+  const tdProgress = document.getElementById(`progress-${fileId}`);
+  const tdAction = document.getElementById(`action-${fileId}`);
+  
+  try {
+    tdAction.innerHTML = `<span style="color:#2563eb;">1/3 Mengambil data Sheet...</span>`;
+
+    let realData = await apiGet(CFG.apiDATA, CFG.sheetStock);
+
+    const databaseSpreadsheet = realData.map(item => ({
+       IdProduk: item['Id Produk'] || item['ID Produk'] || item['id produk'],
+       Kategori: item['Kategori'] || item['kategori'],
+       NamaProduk: item['Nama Produk'] || item['nama produk'],
+       NamaVariasi: item['Variasi'] || item['variasi'] || '',
+       Stok: 0
+    }));
+
+    tdAction.innerHTML = `<span style="color:#2563eb;">2/3 Memproses pencocokan...</span>`;
+    let daftarUpdate = [];
+
+    dataExcel.forEach((barisExcel) => {
+        let merkKategori = barisExcel["MERK/PRODUK"] || barisExcel["MERK"];
+        let tipeProduk = barisExcel["TYPE PRODUK"] || barisExcel["TIPE PRODUK"];
+        let saldoAkhir = barisExcel["Saldo Akhir"] || barisExcel["SALDO AKHIR"];
+
+        if(tipeProduk) {
+           let hasilCocok = cariDataSpreadsheet(merkKategori, tipeProduk, databaseSpreadsheet);
+           if (hasilCocok) {
+               daftarUpdate.push({
+                   IdProduk: hasilCocok.IdProduk,
+                   StokBaru: saldoAkhir
+               });
+           }
+        }
+    });
+
+    if (daftarUpdate.length === 0) {
+        throw new Error("TIDAK_ADA_COCOK");
+    }
+
+    tdAction.innerHTML = `<span style="color:#2563eb;">3/3 Menyimpan ke server...</span>`;
+
+    let postResponse = await fetch(CFG.apiDATA, {
+        method: 'POST',
+        body: JSON.stringify({
+            action: 'massUpdate',
+            sheet: CFG.sheetStock,
+            data: daftarUpdate
+        })
+    });
+    let result = await postResponse.json();
+
+    if(result.success) {
+        // --- JIKA SUKSES (TAMPILAN ALA SHOPEE) ---
+        tdProgress.innerHTML = `<span style="color:#16a34a; font-weight:bold;">${result.updated}/${totalBarisExcel}</span>`;
+        tdAction.innerHTML = `<button onclick="alert('File sudah selesai diproses!')" style="color:#ea580c; border: 1px solid #ea580c; background: transparent; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">Selesai</button>`;
+
+        // Catat ke server (Background process)
+        try {
+            await apiPost(CFG.apiDATA, {
+                Tanggal: nowFmt(),
+                Role: 'ADMIN',
+                Action: 'UPDATE',
+                ID: '-',
+                NamaProduk: `Mass Update (${fileNamaAsli})`,
+                StokBaru: result.updated,
+                HargaTerbaru: '-'
+            }, CFG.sheetRiwayat);
+            
+            // Opsional: Coba render ulang tabel riwayat utama (jika ada di luar modal)
+            const rwNew = await apiGet(CFG.apiDATA, CFG.sheetRiwayat);
+            if(rwNew && Array.isArray(rwNew)) S.st.riwayat = rwNew.reverse();
+            if(typeof renderStRiwayat === 'function') renderStRiwayat();
+        } catch (errRiwayat) {}
+
+        // PERHATIKAN: Saya hapus location.reload() agar tabel Anda tidak hilang
+
+    } else {
+        throw new Error(result.error || "Gagal menyimpan ke Sheet.");
+    }
+
+  } catch (error) {
+    // --- JIKA GAGAL ---
+    console.error("ERROR MASS UPDATE:", error);
+    tdProgress.innerHTML = `<span style="color:#ef4444; font-weight:bold;">0/${totalBarisExcel}</span>`;
+    
+    if (error.message === "TIDAK_ADA_COCOK") {
+        tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">Data tidak cocok</span>`;
+    } else {
+        tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">Error Sistem</span>`;
+    }
+  } finally {
+    isProcessing = false;
+    if(fileInput) { 
+        fileInput.disabled = false; 
+        fileInput.value = ''; 
+    }
+    document.getElementById('mu-file-label').innerText = 'Letakkan file Excel di sini';
+  }
+}
 /* ═══════════════════════════════════════════════════════════
    ██████  PERFORMA ADMIN MODULE (ISOLATED FILTER)  ██████
 ═══════════════════════════════════════════════════════════ */
