@@ -3785,7 +3785,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbzsG0X-au2NsNchgtEpPvN3E-gXMmeW0U6tjkYb5x4WmtO7nOHNQIYbgHufuTjxsvkmGg/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwDbeXjDUh7NfVO8NxXt8pi2LfWOtO61DJDXM8PhW0ibZgSau6SqHO3Aicxsq-F_CwRdg/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
