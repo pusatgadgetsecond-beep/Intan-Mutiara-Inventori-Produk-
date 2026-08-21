@@ -3785,7 +3785,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbxBCvHdQ-9HyvADSIHCUPzfNbzrqV8EJwUToP6Kz1Y1aIGh_-vvGn0kf0_RclCXb8_knQ/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbyB0OzYT-P7d5s9uaB6Y-jMzq3cMvQMb-V49e90R2UToGxZkaSa1hFxarE4A_H8KT-dig/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -4066,8 +4066,8 @@ window.loadFlashSale = async function() {
       S.st.flashSale = [];
     }
   } catch (error) {
-    console.error('Gagal memuat data Flash Sale:', error);
-    S.st.flashSale = [];
+    // Tampilkan error jelas di Console dan PERTAHANKAN DATA LAMA
+    console.error(`❌ Gagal mengambil data: ${CFG.sheetFlashSale}\n${error.message}`);
   }
 };
 
@@ -4364,48 +4364,71 @@ async function fetchAll(manual=false){
   if(manual) toast('Memuat ulang data...','info');
   
   try {
-    // 1. Siapkan semua request secara paralel (Termasuk IMC)
-    const kcReq   = apiGet(CFG.apiKC, CFG.sheetKC).catch(() => null);
-    
-    // 2. Semua modul menggunakan API GABUNGAN (CFG.apiDATA)
-    const stReq   = apiGet(CFG.apiDATA, CFG.sheetStock).catch(() => null);
-    const fsReq   = apiGet(CFG.apiDATA, CFG.sheetFlashSale).catch(() => null);
-    const rwReq   = apiGet(CFG.apiDATA, CFG.sheetRiwayat).catch(() => null);
-    const pjReq   = apiGet(CFG.apiDATA, CFG.sheetPenjualan).catch(() => null);
-    const onReq   = apiGet(CFG.apiDATA, CFG.sheetOnline).catch(() => null);
-    const lvReq   = apiGet(CFG.apiDATA, CFG.sheetLive).catch(() => null);
-    const offReq  = apiGet(CFG.apiDATA, CFG.sheetOffline).catch(() => null);
-    const chatReq = apiGet(CFG.apiDATA, CFG.sheetChat).catch(() => null);
+    const safeFetch = async (url, sheet, name) => {
+      try {
+        return await apiGet(url, sheet);
+      } catch (error) {
+        console.error(`❌ Gagal mengambil data: ${name}\n${error.message}`);
+        return null;
+      }
+    };
 
-    // 3. Eksekusi semua request secara BERSAMAAN (Hemat waktu loading drastis!)
-    const [kc, st, fsData, rwData, pj, on, lv, offData, chatData] = await Promise.all([
-      kcReq, stReq, fsReq, rwReq, pjReq, onReq, lvReq, offReq, chatReq
-    ]);
+    // EKSEKUSI BERURUTAN (SEQUENTIAL)
+    // Menghindari error 404 dari Google Apps Script akibat request yang bertabrakan
+    const kc       = await safeFetch(CFG.apiKC, CFG.sheetKC, 'Konten Kreator');
+    const st       = await safeFetch(CFG.apiDATA, CFG.sheetStock, 'STOCK');
+    const fsData   = await safeFetch(CFG.apiDATA, CFG.sheetFlashSale, 'Flash Sale');
+    const rwData   = await safeFetch(CFG.apiDATA, CFG.sheetRiwayat, 'Riwayat');
+    const pj       = await safeFetch(CFG.apiDATA, CFG.sheetPenjualan, 'Penjualan');
+    const on       = await safeFetch(CFG.apiDATA, CFG.sheetOnline, 'Online Shop');
+    const lv       = await safeFetch(CFG.apiDATA, CFG.sheetLive, 'Host Live');
+    const offData  = await safeFetch(CFG.apiDATA, CFG.sheetOffline, 'Offline');
+    const chatData = await safeFetch(CFG.apiDATA, CFG.sheetChat, 'Respon Chat');
 
     // --- ASSIGN DATA IMC ---
-    if(kc && Array.isArray(kc)) S.kc.data = kc.map(kcNorm);
+    if (kc !== null) {
+      if (Array.isArray(kc)) S.kc.data = kc.map(kcNorm);
+      else S.kc.data = [];
+    }
 
     // --- ASSIGN DATA STOCK ---
-    if(st && Array.isArray(st)) S.st.data = st.filter(r=>String(r['Id Produk']||'').trim()||String(r['Nama Produk']||'').trim());
-    if(fsData && Array.isArray(fsData)) S.st.flashSale = fsData; else S.st.flashSale = [];
-    if(rwData && Array.isArray(rwData)) S.st.riwayat = rwData.reverse(); else S.st.riwayat = [];
+    if (st !== null) {
+      if (Array.isArray(st)) S.st.data = st.filter(r=>String(r['Id Produk']||'').trim()||String(r['Nama Produk']||'').trim());
+      else S.st.data = [];
+    }
+    
+    if (fsData !== null) {
+      if (Array.isArray(fsData)) S.st.flashSale = fsData; 
+      else S.st.flashSale = [];
+    }
+    
+    if (rwData !== null) {
+      if (Array.isArray(rwData)) S.st.riwayat = rwData.reverse(); 
+      else S.st.riwayat = [];
+    }
 
     // --- ASSIGN DATA PERFORMA ADMIN ---
     const handleDynamic = (val, stateKey) => {
-        if (val && Array.isArray(val)) {
-            S.pa[stateKey] = val;
-        } else if (val && val.rows) {
-            S.pa[stateKey] = val.rows;
-            S.pa[stateKey + 'Headers'] = val.headers;
-            if (val.setting && val.setting.length > 0) {
-                S.pa.setting = val.setting;
-            }
-        } else {
-            S.pa[stateKey] = [];
+      if (val === null) return; 
+      
+      if (val && Array.isArray(val)) {
+        S.pa[stateKey] = val;
+      } else if (val && val.rows) {
+        S.pa[stateKey] = val.rows;
+        S.pa[stateKey + 'Headers'] = val.headers;
+        if (val.setting && val.setting.length > 0) {
+          S.pa.setting = val.setting;
         }
+      } else {
+        S.pa[stateKey] = [];
+      }
     };
 
-    if(pj && Array.isArray(pj)) S.pa.penjualan = pj;
+    if (pj !== null) {
+      if (Array.isArray(pj)) S.pa.penjualan = pj;
+      else S.pa.penjualan = [];
+    }
+    
     handleDynamic(on, 'online');
     handleDynamic(lv, 'live');
     handleDynamic(offData, 'offline');
@@ -4416,7 +4439,7 @@ async function fetchAll(manual=false){
     if(manual) toast('Data berhasil diperbarui','ok');
 
   } catch(e) {
-    console.error(e);
+    console.error('Terjadi kesalahan tidak terduga pada fetchAll:', e);
     toast('Terjadi kendala jaringan, beberapa data mungkin tidak termuat.','warn');
     renderAll();
   } finally {
