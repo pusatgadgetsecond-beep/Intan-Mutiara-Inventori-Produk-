@@ -3785,7 +3785,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbwnBZS9HL8lt-PRo8GsvwFi3i-mG9sihQfKqNUW8qHlg2-wv9S_phGxDXi2-7bwdYRO2A/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwxJCBSlJGMAAMMZda2vdlt4iHJWOdzFbOyBw-L2Ar-oUvkGCd3SNrViT1XM3e5RtCX5g/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -5330,32 +5330,6 @@ window.openMassUpdate = openMassUpdate;
 window.closeMassUpdate = closeMassUpdate;
 
 // ==============================================================================
-// HELPER MATCHING: NORMALISASI, ANGKA, & JARINGAN
-// ==============================================================================
-function cleanStringForMatch(str) {
-    if (!str) return '';
-    return String(str).toUpperCase()
-        .replace(/\u00A0/g, ' ') // Hapus Non-Breaking Space
-        .replace(/GB|TB|HC|CELL|SELULER/g, ' ') // Hapus token ekstra
-        .replace(/[\/\-_]/g, ' ') // Ubah slash, strip, dan underscore jadi spasi
-        .replace(/\s+/g, ' ') // Normalisasi spasi ganda
-        .trim();
-}
-
-function extractNumbers(str) {
-    const matches = String(str).match(/\d+/g);
-    return matches ? matches.join('|') : '';
-}
-
-function extractNetwork(str) {
-    const s = String(str).toUpperCase();
-    const is5G = s.includes('5G');
-    const is4G = s.includes('4G');
-    if (is5G && !is4G) return '5G';
-    if (is4G && !is5G) return '4G';
-    return 'NONE';
-}
-// ==============================================================================
 // LOGIKA UPLOAD & PEMBACAAN EXCEL
 // ==============================================================================
 function handleFileUpload(event) {
@@ -5442,7 +5416,128 @@ function tambahkanKeTabel(namaFile, fileId) {
 }
 
 // ==============================================================================
-// LOGIKA UTAMA: MATCHING & UPDATE
+// 🚀 MATCHING ENGINE V2 — HIERARCHICAL DETERMINISTIC MATCHING
+// ==============================================================================
+
+/**
+ * 1. Normalisasi Text Khusus Mass Update
+ */
+function cleanTextMassUpdate(str, isDb = false) {
+  if (!str) return '';
+  let s = String(str).toUpperCase();
+  
+  // Hapus Non-Breaking Space & Zero-Width Characters
+  s = s.replace(/[\u00A0\u200B\u200C\u200D\uFEFF]/g, ' ');
+  
+  // Abaikan "NO WIRELESS" jika berada pada Database (hanya untuk representasi matching)
+  if (isDb) {
+    s = s.replace(/\bNO\s+WIRELESS\b/g, ' ');
+  }
+  
+  // Normalisasi Canonical PLUS (+ dan PLUS diangap sama)
+  s = s.replace(/\+/g, ' PLUS ');
+  
+  // Normalisasi Kapasitas (hilangkan GB/TB jika merupakan suffix angka)
+  s = s.replace(/(\d+)\s*(GB|TB)\b/gi, '$1');
+  s = s.replace(/\b(GB|TB)\b/gi, ' ');
+  
+  // Normalisasi Tanda Baca & Spasi di sekitar Slash/Dash/Underscore
+  s = s.replace(/\s*[\/\-_]\s*/g, '/');
+  
+  // Spasi Ganda menjadi Single Space
+  s = s.replace(/\s+/g, ' ').trim();
+  
+  return s;
+}
+
+/**
+ * 2. Ekstraksi Atribut Spesifikasi (Category, Model, RAM, ROM, Network)
+ */
+function extractSpecsMassUpdate(catRaw, typeRaw, isDb = false) {
+  const category = cleanTextMassUpdate(catRaw, false);
+  let cleanType = cleanTextMassUpdate(typeRaw, isDb);
+
+  // Ekstraksi Network (4G / 5G)
+  let network = 'NONE';
+  if (/\b5G\b/.test(cleanType)) {
+    network = '5G';
+    cleanType = cleanType.replace(/\b5G\b/g, ' ');
+  } else if (/\b4G\b/.test(cleanType)) {
+    network = '4G';
+    cleanType = cleanType.replace(/\b4G\b/g, ' ');
+  }
+
+  // Ekstraksi RAM & ROM (Contoh: 8/256, 8/128, 4/64, 12/256)
+  let ram = '', rom = '';
+  const ramRomMatch = cleanType.match(/\b(\d{1,2})\/(\d{2,4})\b/);
+  if (ramRomMatch) {
+    ram = ramRomMatch[1];
+    rom = ramRomMatch[2];
+    cleanType = cleanType.replace(ramRomMatch[0], ' ');
+  }
+
+  // Sisa kata dianggap sebagai MODEL / IDENTITAS PRODUK
+  let modelTokens = cleanType
+    .replace(/[^A-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(t => t.length > 0);
+
+  // Sorting token model secara alfabetis untuk konsistensi matching urutan kata
+  const modelCanonical = [...modelTokens].sort().join(' ');
+
+  // Product Signature: CATEGORY | MODEL_CANONICAL | RAM | ROM | NETWORK
+  const signature = `${category}|${modelCanonical}|${ram}|${rom}|${network}`;
+
+  return {
+    category,
+    modelCanonical,
+    modelRaw: modelTokens.join(' '),
+    modelTokens,
+    ram,
+    rom,
+    network,
+    signature,
+    rawNormalized: cleanType.replace(/\s+/g, ' ').trim()
+  };
+}
+
+/**
+ * 3. Logika Scoring controlled Level 3 (Safety Guarded)
+ */
+function calculateMatchScore(exSpec, dbSpec) {
+  // Category, RAM, ROM, dan Network WAJIB KOLEKTIF COCOK
+  if (exSpec.category !== dbSpec.category) return 0;
+  if (exSpec.ram !== dbSpec.ram || exSpec.rom !== dbSpec.rom) return 0;
+  
+  // 4G vs 5G Konflik Mutlak
+  if (exSpec.network !== 'NONE' && dbSpec.network !== 'NONE' && exSpec.network !== dbSpec.network) {
+    return 0;
+  }
+
+  // Match Token Model
+  const exTokens = exSpec.modelTokens;
+  const dbTokens = dbSpec.modelTokens;
+  
+  if (exTokens.length === 0 || dbTokens.length === 0) return 0;
+
+  let matchCount = 0;
+  exTokens.forEach(t => {
+    if (dbTokens.includes(t)) matchCount++;
+  });
+
+  const precision = matchCount / exTokens.length;
+  const recall = matchCount / dbTokens.length;
+
+  if (precision === 1 && recall === 1) return 100;
+  if (precision === 1 || recall === 1) return 85;
+  
+  return (precision * 0.6 + recall * 0.4) * 100;
+}
+
+// ==============================================================================
+// 📦 LOGIKA UTAMA MATCHING V2 & TRANSPORT API
 // ==============================================================================
 async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
   const dataExcel = tempExcelData[fileId];
@@ -5450,227 +5545,334 @@ async function prosesPencocokanOtomatis(fileId, fileInput, totalBarisExcel) {
   const tdAction = document.getElementById(`action-${fileId}`);
   
   try {
-    console.log(`[MASS UPDATE] Membaca baris Excel: ${totalBarisExcel}`);
-    tdAction.innerHTML = `<span style="color:#2563eb;">1/3 Mengambil data Sheet...</span>`;
+    console.log(`[MASS UPDATE][START] Membaca ${totalBarisExcel} baris dari Excel...`);
+    tdAction.innerHTML = `<span style="color:#2563eb;">1/3 Mengambil database STOCK...</span>`;
 
-    let targetSheet = (typeof CFG !== 'undefined' && CFG.sheetStock) ? CFG.sheetStock : 'STOCK';
-    let realData = await apiGet(CFG.apiDATA, targetSheet);
+    const targetSheet = (typeof CFG !== 'undefined' && CFG.sheetStock) ? CFG.sheetStock : 'STOCK';
+    const realData = await apiGet(CFG.apiDATA, targetSheet);
 
-    const dbData = realData.map(item => ({
-       IdProduk: String(item['Id Produk'] || item['id produk'] || '').trim(),
-       Kategori: String(item['Kategori'] || '').trim(),
-       NamaVariasi: String(item['Nama Variasi'] || item['Variasi'] || '').trim(),
-       NamaProduk: String(item['Nama Produk'] || '').trim()
-    })).filter(item => item.IdProduk !== '');
+    if (!Array.isArray(realData) || realData.length === 0) {
+      throw new Error("Database STOCK kosong atau tidak dapat diakses.");
+    }
 
-    tdAction.innerHTML = `<span style="color:#2563eb;">2/3 Memproses pencocokan...</span>`;
+    // Pre-parse Database STOCK dengan Matching Signature V2
+    const dbParsed = realData.map(item => {
+      const idProduk = String(item['Id Produk'] || item['id produk'] || '').trim();
+      const kategori = String(item['Kategori'] || '').trim();
+      const namaVariasi = String(item['Nama Variasi'] || item['Variasi'] || item['Nama Produk'] || '').trim();
+      const namaProduk = String(item['Nama Produk'] || '').trim();
+      
+      const spec = extractSpecsMassUpdate(kategori, namaVariasi, true);
+      return { idProduk, kategori, namaVariasi, namaProduk, spec };
+    }).filter(item => item.idProduk !== '');
+
+    tdAction.innerHTML = `<span style="color:#2563eb;">2/3 Memproses Hierarchical Matching V2...</span>`;
     
     let daftarUpdate = [];
     let uniqueExcelMap = new Map();
     let dataGagal = []; 
 
-    let stats = { totalExcel: 0, matched: 0, ambiguous: 0, conflict: 0, notFound: 0 };
+    let stats = {
+      totalExcel: 0,
+      valid: 0,
+      matched: 0,
+      updated: 0,
+      skipped: 0,
+      notFound: 0,
+      ambiguous: 0,
+      conflict: 0,
+      invalid: 0,
+      networkError: 0
+    };
 
-    // TAHAP 1: Filter, Pembersihan & Deteksi Duplikat di Excel
+    // TAHAP 1: Filter, Parsing & Deteksi Duplikat Excel
     dataExcel.forEach((row) => {
-        let keys = Object.keys(row);
-        let merkRaw = row[keys.find(k => String(k).toLowerCase().includes('merk'))] || "";
-        let tipeRaw = row[keys.find(k => String(k).toLowerCase().includes('type') || String(k).toLowerCase().includes('tipe'))] || "";
-        let saldoRaw = row[keys.find(k => String(k).toLowerCase().includes('saldo') || String(k).toLowerCase().includes('stok'))];
+      stats.totalExcel++;
+      const keys = Object.keys(row);
+      const merkRaw = String(row[keys.find(k => String(k).toLowerCase().includes('merk'))] || "").trim();
+      const tipeRaw = String(row[keys.find(k => String(k).toLowerCase().includes('type') || String(k).toLowerCase().includes('tipe'))] || "").trim();
+      const saldoRaw = row[keys.find(k => String(k).toLowerCase().includes('saldo') || String(k).toLowerCase().includes('stok'))];
 
-        if (!merkRaw || !tipeRaw || saldoRaw === undefined || saldoRaw === "") return;
-        
-        stats.totalExcel++;
-        let saldoAkhir = parseInt(saldoRaw) || 0;
-        let mapKey = `${cleanStringForMatch(merkRaw)}||${cleanStringForMatch(tipeRaw)}`;
+      if (!merkRaw || !tipeRaw || saldoRaw === undefined || saldoRaw === "") {
+        stats.invalid++;
+        dataGagal.push({
+          "MERK/PRODUK": merkRaw || "-",
+          "TYPE PRODUK": tipeRaw || "-",
+          "SALDO AKHIR": saldoRaw || "-",
+          "STATUS": "INVALID",
+          "ALASAN": "Kolom MERK, TYPE, atau SALDO AKHIR tidak lengkap."
+        });
+        return;
+      }
 
-        if (uniqueExcelMap.has(mapKey)) {
-            let existing = uniqueExcelMap.get(mapKey);
-            if (existing.saldo !== saldoAkhir) {
-                existing.isConflict = true; 
-            }
-        } else {
-            uniqueExcelMap.set(mapKey, { merkRaw, tipeRaw, saldo: saldoAkhir, isConflict: false });
+      stats.valid++;
+      const saldoAkhir = parseInt(String(saldoRaw).replace(/[^\d-]/g, '')) || 0;
+      const exSpec = extractSpecsMassUpdate(merkRaw, tipeRaw, false);
+      const mapKey = exSpec.signature;
+
+      if (uniqueExcelMap.has(mapKey)) {
+        const existing = uniqueExcelMap.get(mapKey);
+        if (existing.saldo !== saldoAkhir) {
+          existing.isConflict = true;
         }
+      } else {
+        uniqueExcelMap.set(mapKey, { merkRaw, tipeRaw, exSpec, saldo: saldoAkhir, isConflict: false });
+      }
     });
 
-    // TAHAP 2: Matching dengan Database
-    for (let [keyMap, ex] of uniqueExcelMap.entries()) {
-        if (ex.isConflict) {
-            dataGagal.push({
-                "MERK/PRODUK": ex.merkRaw, "TYPE PRODUK": ex.tipeRaw,
-                "SALDO AKHIR": ex.saldo, "STATUS": "CONFLICT", 
-                "ALASAN": "Produk muncul lebih dari sekali di Excel dengan Saldo Akhir berbeda."
-            });
-            stats.conflict++;
-            continue;
-        }
-
-        let exCat = cleanStringForMatch(ex.merkRaw);
-        let exType = cleanStringForMatch(ex.tipeRaw);
-        let exNums = extractNumbers(exType);
-        let exNet = extractNetwork(ex.tipeRaw);
-
-        let kandidat = dbData.filter(db => {
-            let dbCat = cleanStringForMatch(db.Kategori);
-            let dbType = cleanStringForMatch(db.NamaVariasi);
-
-            if (dbCat !== exCat) return false;                           
-            if (extractNumbers(dbType) !== exNums) return false;         
-            if (exNet !== 'NONE' && extractNetwork(dbType) !== 'NONE' && exNet !== extractNetwork(dbType)) return false; 
-            
-            let exWords = exType.replace(/[0-9]/g, '').replace(/5G|4G/g, '').trim().split(' ').filter(w=>w);
-            for(let w of exWords) {
-                if (!dbType.includes(w)) return false; 
-            }
-            return true;
+    // TAHAP 2: Hierarchical Deterministic Matching (Level 1 -> Level 2 -> Level 3)
+    for (let [mapKey, ex] of uniqueExcelMap.entries()) {
+      if (ex.isConflict) {
+        stats.conflict++;
+        dataGagal.push({
+          "MERK/PRODUK": ex.merkRaw,
+          "TYPE PRODUK": ex.tipeRaw,
+          "SALDO AKHIR": ex.saldo,
+          "STATUS": "CONFLICT",
+          "ALASAN": "Produk duplikat di Excel memiliki Nilai Saldo Akhir yang berbeda."
         });
+        continue;
+      }
 
-        if (kandidat.length === 1) {
-            daftarUpdate.push({ IdProduk: kandidat[0].IdProduk, StokAkhir: ex.saldo });
-            stats.matched++;
-        } else if (kandidat.length > 1) {
-            dataGagal.push({ 
-                "MERK/PRODUK": ex.merkRaw, "TYPE PRODUK": ex.tipeRaw, 
-                "SALDO AKHIR": ex.saldo, "STATUS": "AMBIGUOUS", 
-                "ALASAN": `Ditemukan ${kandidat.length} kandidat di database STOCK.`
-            });
-            stats.ambiguous++;
-        } else {
-            dataGagal.push({ 
-                "MERK/PRODUK": ex.merkRaw, "TYPE PRODUK": ex.tipeRaw, 
-                "SALDO AKHIR": ex.saldo, "STATUS": "NOT FOUND", 
-                "ALASAN": "Produk tidak ditemukan di database STOCK."
-            });
-            stats.notFound++;
+      const exSpec = ex.exSpec;
+      let candidates = [];
+
+      // LEVEL 1: Exact Canonical Signature Match
+      candidates = dbParsed.filter(db => db.spec.signature === exSpec.signature);
+
+      if (candidates.length === 1) {
+        console.log(`[MASS UPDATE][MATCH L1] Excel: "${ex.merkRaw} ${ex.tipeRaw}" ➔ DB: "${candidates[0].namaVariasi}" (ID: ${candidates[0].idProduk})`);
+        daftarUpdate.push({ IdProduk: candidates[0].idProduk, StokAkhir: ex.saldo });
+        stats.matched++;
+        continue;
+      }
+
+      if (candidates.length > 1) {
+        stats.ambiguous++;
+        const candidateNames = candidates.map(c => c.namaVariasi).join('; ');
+        console.warn(`[MASS UPDATE][AMBIGUOUS L1] Excel: "${ex.tipeRaw}" ➔ ${candidates.length} Kandidat: [${candidateNames}]`);
+        dataGagal.push({
+          "MERK/PRODUK": ex.merkRaw,
+          "TYPE PRODUK": ex.tipeRaw,
+          "SALDO AKHIR": ex.saldo,
+          "STATUS": "AMBIGUOUS",
+          "ALASAN": `Ditemukan ${candidates.length} kandidat identik di database STOCK.`,
+          "KANDIDAT": candidateNames
+        });
+        continue;
+      }
+
+      // LEVEL 2: Strong Attribute Matching
+      candidates = dbParsed.filter(db => {
+        if (db.spec.category !== exSpec.category) return false;
+        if (db.spec.ram !== exSpec.ram || db.spec.rom !== exSpec.rom) return false;
+        
+        // Network Check
+        if (exSpec.network !== 'NONE' && db.spec.network !== 'NONE' && exSpec.network !== db.spec.network) {
+          return false;
         }
+
+        // Token Model Coverage Check
+        const exTokens = exSpec.modelTokens;
+        const dbTokens = db.spec.modelTokens;
+        return exTokens.every(t => dbTokens.includes(t));
+      });
+
+      if (candidates.length === 1) {
+        console.log(`[MASS UPDATE][MATCH L2] Excel: "${ex.merkRaw} ${ex.tipeRaw}" ➔ DB: "${candidates[0].namaVariasi}" (ID: ${candidates[0].idProduk})`);
+        daftarUpdate.push({ IdProduk: candidates[0].idProduk, StokAkhir: ex.saldo });
+        stats.matched++;
+        continue;
+      }
+
+      if (candidates.length > 1) {
+        stats.ambiguous++;
+        const candidateNames = candidates.map(c => c.namaVariasi).join('; ');
+        console.warn(`[MASS UPDATE][AMBIGUOUS L2] Excel: "${ex.tipeRaw}" ➔ ${candidates.length} Kandidat: [${candidateNames}]`);
+        dataGagal.push({
+          "MERK/PRODUK": ex.merkRaw,
+          "TYPE PRODUK": ex.tipeRaw,
+          "SALDO AKHIR": ex.saldo,
+          "STATUS": "AMBIGUOUS",
+          "ALASAN": `Ditemukan ${candidates.length} kandidat kuat pada Level 2.`,
+          "KANDIDAT": candidateNames
+        });
+        continue;
+      }
+
+      // LEVEL 3: Controlled Scoring Fallback
+      let bestScore = 0;
+      let scoredCandidates = [];
+
+      dbParsed.forEach(db => {
+        const score = calculateMatchScore(exSpec, db.spec);
+        if (score >= 85) {
+          scoredCandidates.push({ db, score });
+          if (score > bestScore) bestScore = score;
+        }
+      });
+
+      scoredCandidates = scoredCandidates.filter(c => c.score === bestScore);
+
+      if (scoredCandidates.length === 1 && bestScore >= 85) {
+        const matchItem = scoredCandidates[0].db;
+        console.log(`[MASS UPDATE][MATCH L3 Score: ${bestScore}] Excel: "${ex.tipeRaw}" ➔ DB: "${matchItem.namaVariasi}"`);
+        daftarUpdate.push({ IdProduk: matchItem.idProduk, StokAkhir: ex.saldo });
+        stats.matched++;
+      } else if (scoredCandidates.length > 1) {
+        stats.ambiguous++;
+        const candidateNames = scoredCandidates.map(c => c.db.namaVariasi).join('; ');
+        dataGagal.push({
+          "MERK/PRODUK": ex.merkRaw,
+          "TYPE PRODUK": ex.tipeRaw,
+          "SALDO AKHIR": ex.saldo,
+          "STATUS": "AMBIGUOUS",
+          "ALASAN": `Terdapat ${scoredCandidates.length} kandidat dengan skor kemiripan sama (${bestScore}).`,
+          "KANDIDAT": candidateNames
+        });
+      } else {
+        stats.notFound++;
+        console.warn(`[MASS UPDATE][NOT FOUND] Excel: "${ex.merkRaw} ${ex.tipeRaw}"`);
+        dataGagal.push({
+          "MERK/PRODUK": ex.merkRaw,
+          "TYPE PRODUK": ex.tipeRaw,
+          "SALDO AKHIR": ex.saldo,
+          "STATUS": "NOT FOUND",
+          "ALASAN": "Produk tidak ditemukan di database STOCK."
+        });
+      }
     }
 
     if (daftarUpdate.length === 0) {
-        window.failedDataList[fileId] = dataGagal; 
-        throw new Error("TIDAK_ADA_COCOK");
+      window.failedDataList[fileId] = dataGagal; 
+      throw new Error("TIDAK_ADA_COCOK");
     }
 
-    // TAHAP 3: Kirim Update Final Ke Server (Transport Anti-CORS)
-    tdAction.innerHTML = `<span style="color:#2563eb;">3/3 Menyimpan ${stats.matched} data ke server...</span>`;
+    // TAHAP 3: Pengiriman Batch ke Backend Apps Script
+    tdAction.innerHTML = `<span style="color:#2563eb;">3/3 Menyimpan ${daftarUpdate.length} data ke server...</span>`;
     
     let response;
     try {
-        response = await fetch(CFG.apiDATA, {
-            method: 'POST',
-            redirect: 'follow', // Wajib untuk mengikuti sistem auth/redirect Google
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8' // Menghindari preflight OPTIONS request
-            },
-            body: JSON.stringify({
-                action: 'massUpdate',
-                sheet: targetSheet,
-                data: daftarUpdate
-            })
-        });
-    } catch (fetchError) {
-        dataGagal.push({
-            "MERK/PRODUK": "-", "TYPE PRODUK": "-", "SALDO AKHIR": "-",
-            "STATUS": "NETWORK ERROR", "ALASAN": `Request fetch ditolak browser/jaringan.`
-        });
-        window.failedDataList[fileId] = dataGagal;
-        throw new Error(`NETWORK_ERROR: Gagal terhubung ke server Mass Update. Data belum dipastikan tersimpan. Jangan upload ulang sebelum status diperiksa. (${fetchError.message})`);
+      response = await fetch(CFG.apiDATA, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'massUpdate',
+          sheet: targetSheet,
+          data: daftarUpdate
+        })
+      });
+    } catch (fetchErr) {
+      stats.networkError++;
+      dataGagal.push({
+        "MERK/PRODUK": "-", "TYPE PRODUK": "-", "SALDO AKHIR": "-",
+        "STATUS": "NETWORK ERROR", "ALASAN": `Fetch error: ${fetchErr.message}`
+      });
+      window.failedDataList[fileId] = dataGagal;
+      throw new Error(`NETWORK_ERROR: Gagal terhubung ke server Mass Update. Data belum dapat dipastikan tersimpan.`);
     }
 
     if (!response.ok) {
-        dataGagal.push({
-            "MERK/PRODUK": "-", "TYPE PRODUK": "-", "SALDO AKHIR": "-",
-            "STATUS": "HTTP ERROR", "ALASAN": `Server merespons dengan status HTTP ${response.status}.`
-        });
-        window.failedDataList[fileId] = dataGagal;
-        throw new Error(`NETWORK_ERROR: Server merespons dengan status error HTTP ${response.status}. Data belum dipastikan tersimpan.`);
+      stats.networkError++;
+      dataGagal.push({
+        "MERK/PRODUK": "-", "TYPE PRODUK": "-", "SALDO AKHIR": "-",
+        "STATUS": "HTTP ERROR", "ALASAN": `HTTP Status ${response.status}`
+      });
+      window.failedDataList[fileId] = dataGagal;
+      throw new Error(`NETWORK_ERROR: Server merespons dengan status error HTTP ${response.status}.`);
     }
 
     let result;
     try {
-        result = await response.json();
-    } catch (jsonError) {
-        dataGagal.push({
-            "MERK/PRODUK": "-", "TYPE PRODUK": "-", "SALDO AKHIR": "-",
-            "STATUS": "INVALID RESPONSE", "ALASAN": `Response bukan format JSON.`
-        });
-        window.failedDataList[fileId] = dataGagal;
-        throw new Error("NETWORK_ERROR: Response server tidak valid (Bukan JSON). Data belum dipastikan tersimpan.");
+      result = await response.json();
+    } catch (jsonErr) {
+      stats.networkError++;
+      dataGagal.push({
+        "MERK/PRODUK": "-", "TYPE PRODUK": "-", "SALDO AKHIR": "-",
+        "STATUS": "INVALID RESPONSE", "ALASAN": "Response server bukan JSON valid."
+      });
+      window.failedDataList[fileId] = dataGagal;
+      throw new Error("NETWORK_ERROR: Response server tidak valid (Bukan JSON). Data belum dipastikan tersimpan.");
     }
 
-    // Validasi Response Bisnis
     if (!result || typeof result.success === 'undefined') {
-        throw new Error("NETWORK_ERROR: Format response dari server tidak dikenali.");
+      throw new Error("NETWORK_ERROR: Format response dari server tidak dikenali.");
     }
 
     if (result.success === false) {
-        throw new Error(`SERVER_ERROR: ${result.error || 'Server menolak request.'}`);
+      throw new Error(`SERVER_ERROR: ${result.error || 'Server menolak request.'}`);
     }
 
-    // TAHAP 4: Evaluasi Keberhasilan (success === true)
-    const jumlahBerhasil = Number(result.updated) || 0;
+    // TAHAP 4: Evaluasi Statistik Hasil Aktual
+    stats.updated = Number(result.updated) || 0;
+    stats.skipped = Number(result.skipped) || 0;
 
     if (result.failed && result.failed.length > 0) {
-        result.failed.forEach(f => {
-            dataGagal.push({
-                "MERK/PRODUK": "-", "TYPE PRODUK": "-", 
-                "Id Produk": f.IdProduk || "-", "SALDO AKHIR": f.StokAkhir || "-", 
-                "STATUS": "FAILED", "ALASAN": `Backend: ${f.error}`
-            });
+      result.failed.forEach(f => {
+        dataGagal.push({
+          "MERK/PRODUK": "-", "TYPE PRODUK": "-", 
+          "Id Produk": f.IdProduk || "-", "SALDO AKHIR": f.StokAkhir || "-", 
+          "STATUS": "FAILED", "ALASAN": `Backend: ${f.error}`
         });
+      });
     }
 
-    let finalTotalGagal = dataGagal.length;
-    if (finalTotalGagal > 0) window.failedDataList[fileId] = dataGagal;
+    const totalGagal = dataGagal.length;
+    if (totalGagal > 0) window.failedDataList[fileId] = dataGagal;
 
-    if (jumlahBerhasil === 0) {
-        // success: true TAPI updated: 0 -> Bukan Error Jaringan.
-        tdProgress.innerHTML = `<span style="color:#d97706; font-weight:bold;">0 Berhasil</span>`;
-        let infoSkip = finalTotalGagal > 0 ? `<br><button onclick="downloadDataGagal('${fileId}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">📥 Download Data Gagal</button>` : "";
-        tdAction.innerHTML = `<span style="color:#d97706; font-weight:bold;">⚠️ Server berhasil memproses request, tetapi tidak ada baris yang berubah.</span>${infoSkip}`;
+    console.log(`[MASS UPDATE][RESULT] Total: ${stats.totalExcel} | Matched: ${stats.matched} | Updated: ${stats.updated} | Ambiguous: ${stats.ambiguous} | NotFound: ${stats.notFound} | Conflict: ${stats.conflict}`);
+
+    if (stats.updated === 0) {
+      tdProgress.innerHTML = `<span style="color:#d97706; font-weight:bold;">0 Berhasil</span>`;
+      const infoSkip = totalGagal > 0 
+        ? `<br><button onclick="downloadDataGagal('${fileId}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">📥 Download Data Gagal</button>` 
+        : "";
+      tdAction.innerHTML = `<span style="color:#d97706; font-weight:bold;">⚠️ Server berhasil merespons, tetapi tidak ada baris yang diubah.</span>${infoSkip}`;
     } else {
-        tdProgress.innerHTML = `<span style="color:#16a34a; font-weight:bold;">${jumlahBerhasil} Berhasil</span>`;
-        let infoSkip = finalTotalGagal > 0 
-            ? `<br><small style="color:gray;">${jumlahBerhasil} berhasil • ${finalTotalGagal} gagal/dilewati</small><br><button onclick="downloadDataGagal('${fileId}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">📥 Download Data Gagal</button>`
-            : `<br><small style="color:gray;">${jumlahBerhasil} berhasil • 0 gagal</small>`;
+      tdProgress.innerHTML = `<span style="color:#16a34a; font-weight:bold;">${stats.updated} Berhasil</span>`;
+      const infoBtn = totalGagal > 0 
+        ? `<br><small style="color:gray;">${stats.updated} updated · ${totalGagal} dilewati/gagal</small><br><button onclick="downloadDataGagal('${fileId}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">📥 Download Data Gagal</button>`
+        : `<br><small style="color:gray;">${stats.updated} updated · 0 gagal</small>`;
 
-        tdAction.innerHTML = `<span style="color:#16a34a; font-weight:bold;">✅ Mass Update Selesai</span>${infoSkip}`;
+      tdAction.innerHTML = `<span style="color:#16a34a; font-weight:bold;">✅ Mass Update Selesai</span>${infoBtn}`;
+      
+      // Refresh Data Tabel & Stats jika terjadi perubahan
+      if (typeof renderStTable === 'function') {
+        const [stRes, rwRes] = await Promise.all([
+          apiGet(CFG.apiDATA, targetSheet),
+          apiGet(CFG.apiDATA, (CFG.sheetRiwayat || 'Riwayat'))
+        ]);
         
-        // HANYA Refresh Data Table jika ada yang benar-benar berubah
-        if (typeof renderStTable === 'function') {
-           const [stRes, rwRes] = await Promise.all([
-             apiGet(CFG.apiDATA, CFG.sheetStock),
-             apiGet(CFG.apiDATA, (CFG.sheetRiwayat || 'Riwayat'))
-           ]);
-           
-           if(Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
-           if(Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse();
-           
-           renderStTable(); 
-           renderStStats();
-           if (typeof renderStRiwayat === 'function') renderStRiwayat();
-        }
+        if (Array.isArray(stRes)) S.st.data = stRes.filter(r => String(r['Id Produk']||'').trim() || String(r['Nama Produk']||'').trim());
+        if (Array.isArray(rwRes)) S.st.riwayat = rwRes.reverse();
+        
+        renderStTable(); 
+        renderStStats();
+        if (typeof renderStRiwayat === 'function') renderStRiwayat();
+      }
     }
 
   } catch (error) {
     tdProgress.innerHTML = `<span style="color:#ef4444; font-weight:bold;">Gagal</span>`;
-    let errMsg = error.message;
+    const errMsg = error.message;
 
-    let btnDownloadError = window.failedDataList[fileId] && window.failedDataList[fileId].length > 0 
-      ? `<br><button onclick="downloadDataGagal('${fileId}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">📥 Download Data Gagal</button>` : "";
+    const btnDownloadError = (window.failedDataList[fileId] && window.failedDataList[fileId].length > 0)
+      ? `<br><button onclick="downloadDataGagal('${fileId}')" style="margin-top: 6px; padding: 4px 8px; font-size: 11px; background-color: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;">📥 Download Data Gagal</button>` 
+      : "";
 
     if (errMsg.startsWith("NETWORK_ERROR:")) {
-         tdAction.innerHTML = `<span style="color:#ef4444; font-size: 11px; font-weight:bold;">❌ ${errMsg.replace('NETWORK_ERROR:', '').trim()}</span>${btnDownloadError}`;
+      tdAction.innerHTML = `<span style="color:#ef4444; font-size: 11px; font-weight:bold;">❌ Gagal terhubung ke server Mass Update. Data belum dapat dipastikan tersimpan.</span>${btnDownloadError}`;
     } else if (errMsg.startsWith("SERVER_ERROR:")) {
-         tdAction.innerHTML = `<span style="color:#ef4444; font-size: 11px; font-weight:bold;">❌ Gagal di Server: ${errMsg.replace('SERVER_ERROR:', '').trim()}</span>${btnDownloadError}`;
+      tdAction.innerHTML = `<span style="color:#ef4444; font-size: 11px; font-weight:bold;">❌ Error Server: ${errMsg.replace('SERVER_ERROR:', '').trim()}</span>${btnDownloadError}`;
     } else if (errMsg === "TIDAK_ADA_COCOK") {
-         tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px; font-weight:bold;">❌ Tidak ada data Excel yang cocok.</span>${btnDownloadError}`;
+      tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px; font-weight:bold;">❌ Tidak ada data Excel yang cocok dengan database STOCK.</span>${btnDownloadError}`;
     } else {
-         tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">❌ ${errMsg}</span>${btnDownloadError}`;
+      tdAction.innerHTML = `<span style="color:#ef4444; font-size: 12px;">❌ ${errMsg}</span>${btnDownloadError}`;
     }
   } finally {
     isProcessing = false;
-    if(fileInput) { fileInput.disabled = false; fileInput.value = ''; }
+    if (fileInput) { fileInput.disabled = false; fileInput.value = ''; }
     document.getElementById('mu-file-label').innerText = 'Letakkan file Excel di sini';
   }
 }
