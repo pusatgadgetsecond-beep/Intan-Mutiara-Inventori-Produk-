@@ -2792,7 +2792,7 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:1; justify-content:flex-end;">
               
               <div class="search-wrap" style="min-width: 200px; flex: 1; max-width: 300px;">
-                <input type="search" class="flt-in btn-sm" id="st-search" name="search_stok" aria-label="Cari produk" placeholder="🔍 Cari produk..." onkeydown="if(event.key === 'Enter') stFilter()" oninput="if(this.value === '') stFilter()" style="min-width: 200px; padding-right: 12px;">
+                <input type="search"class="flt-in btn-sm"id="st-riwayat-search"name="search_riwayat"placeholder="🔍 Cari produk..."oninput="applyStRiwayatFilter()"style="min-width: 200px; padding-right: 12px;">
               </div>
               
               <select class="flt-in" id="st-riwayat-bulan" style="width: auto; height: 40px; min-width: 140px; cursor: pointer;">
@@ -2811,8 +2811,9 @@ table:has(#pa-dash-tbl-online) th:nth-child(6), #pa-dash-tbl-online td:nth-child
                 <option value="12">Desember</option>
               </select>
               
-              <select class="flt-in" id="pa-dash-tahun" style="width: auto; height: 40px; min-width: 140px; cursor: pointer;">
-                <option value="">Semua Tahun</option>
+              <select class="flt-in" id="st-riwayat-tahun" style="width: auto; height: 40px; min-width: 140px; cursor: pointer;">
+             <option value="">Semua Tahun</option>
+               <!-- Biarkan tag <option> tahun Anda yang lain di bawah sini -->
                   </select>
               
               <div style="display: flex; gap: 8px;">
