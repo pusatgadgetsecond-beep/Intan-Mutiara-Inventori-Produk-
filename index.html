@@ -3786,7 +3786,7 @@ const CFG = {
   targetHarian:  30000,
   
   // API BARU (GABUNGAN STOK & ADMIN)
-  apiDATA: 'https://script.google.com/macros/s/AKfycbwxJCBSlJGMAAMMZda2vdlt4iHJWOdzFbOyBw-L2Ar-oUvkGCd3SNrViT1XM3e5RtCX5g/exec',
+  apiDATA: 'https://script.google.com/macros/s/AKfycbwhcgAeDBWejGzJIK8tHbEAchXGqVadPBjSWSlyu_Go_YET3xGUKLbNmgA2lSh-ioLRBg/exec',
   // Mapping Sheet agar konsisten
   sheetStock:     'STOCK',
   sheetRiwayat:   'Riwayat',
@@ -4353,78 +4353,99 @@ function initApp(){
     renderStTable();
   }));
 
-  switchModule('pa'); // Ubah dari showPage('kc-dash') ke switchModule('pa')
-  showLoad(true);
+  switchModule('pa'); // Modul default
   fetchAll(false);
 }
- 
+
+// Fungsi pembantu untuk memberi jeda (mencegah server overload)
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+// Fungsi pemroses data dinamis
+function handleDynamic(val, stateKey) {
+  if (val && Array.isArray(val)) {
+      S.pa[stateKey] = val;
+  } else if (val && val.rows) {
+      S.pa[stateKey] = val.rows;
+      S.pa[stateKey + 'Headers'] = val.headers;
+      if (val.setting && val.setting.length > 0) {
+          S.pa.setting = val.setting;
+      }
+  } else {
+      S.pa[stateKey] = [];
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════
-   FETCH ALL DATA
+   FETCH ALL DATA (WATERFALL / SEQUENTIAL METHOD)
 ═══════════════════════════════════════════════════════════ */
 async function fetchAll(manual=false){
   if(manual) toast('Memuat ulang data...','info');
   
+  // Munculkan loading hanya di awal saja
+  showLoad(true);
+
   try {
-    // 1. Siapkan semua request secara paralel (Termasuk IMC)
-    const kcReq   = apiGet(CFG.apiKC, CFG.sheetKC).catch(() => null);
-    
-    // 2. Semua modul menggunakan API GABUNGAN (CFG.apiDATA)
-    const stReq   = apiGet(CFG.apiDATA, CFG.sheetStock).catch(() => null);
-    const fsReq   = apiGet(CFG.apiDATA, CFG.sheetFlashSale).catch(() => null);
-    const rwReq   = apiGet(CFG.apiDATA, CFG.sheetRiwayat).catch(() => null);
-    const pjReq   = apiGet(CFG.apiDATA, CFG.sheetPenjualan).catch(() => null);
-    const onReq   = apiGet(CFG.apiDATA, CFG.sheetOnline).catch(() => null);
-    const lvReq   = apiGet(CFG.apiDATA, CFG.sheetLive).catch(() => null);
-    const offReq  = apiGet(CFG.apiDATA, CFG.sheetOffline).catch(() => null);
-    const chatReq = apiGet(CFG.apiDATA, CFG.sheetChat).catch(() => null);
+    // =========================================================
+    // FASE 1: LOAD DATA PRIORITAS (Dibutuhkan langsung oleh UI)
+    // =========================================================
+    const kcReq = await apiGet(CFG.apiKC, CFG.sheetKC).catch(() => null);
+    if(kcReq && Array.isArray(kcReq)) S.kc.data = kcReq.map(kcNorm);
 
-    // 3. Eksekusi semua request secara BERSAMAAN (Hemat waktu loading drastis!)
-    const [kc, st, fsData, rwData, pj, on, lv, offData, chatData] = await Promise.all([
-      kcReq, stReq, fsReq, rwReq, pjReq, onReq, lvReq, offReq, chatReq
-    ]);
+    await delay(600); // Jeda aman untuk Google Script
 
-    // --- ASSIGN DATA IMC ---
-    if(kc && Array.isArray(kc)) S.kc.data = kc.map(kcNorm);
+    const stReq = await apiGet(CFG.apiDATA, CFG.sheetStock).catch(() => null);
+    if(stReq && Array.isArray(stReq)) S.st.data = stReq.filter(r=>String(r['Id Produk']||'').trim()||String(r['Nama Produk']||'').trim());
 
-    // --- ASSIGN DATA STOCK ---
-    if(st && Array.isArray(st)) S.st.data = st.filter(r=>String(r['Id Produk']||'').trim()||String(r['Nama Produk']||'').trim());
-    if(fsData && Array.isArray(fsData)) S.st.flashSale = fsData; else S.st.flashSale = [];
-    if(rwData && Array.isArray(rwData)) S.st.riwayat = rwData.reverse(); else S.st.riwayat = [];
+    // 🚀 BUKA UI SEKARANG JUGA! USER SUDAH BISA PAKAI APLIKASI
+    showLoad(false);
+    renderAll(); 
+    if(manual) toast('Data utama berhasil diperbarui','ok');
 
-    // --- ASSIGN DATA PERFORMA ADMIN ---
-    const handleDynamic = (val, stateKey) => {
-        if (val && Array.isArray(val)) {
-            S.pa[stateKey] = val;
-        } else if (val && val.rows) {
-            S.pa[stateKey] = val.rows;
-            S.pa[stateKey + 'Headers'] = val.headers;
-            if (val.setting && val.setting.length > 0) {
-                S.pa.setting = val.setting;
-            }
-        } else {
-            S.pa[stateKey] = [];
-        }
-    };
+    // =========================================================
+    // FASE 2: LOAD BACKGROUND (Modul Performa Admin)
+    // Dilakukan diam-diam tanpa memblokir interaksi user
+    // =========================================================
+    await delay(700);
+    const pjReq = await apiGet(CFG.apiDATA, CFG.sheetPenjualan).catch(() => null);
+    if(pjReq && Array.isArray(pjReq)) S.pa.penjualan = pjReq;
 
-    if(pj && Array.isArray(pj)) S.pa.penjualan = pj;
-    handleDynamic(on, 'online');
-    handleDynamic(lv, 'live');
-    handleDynamic(offData, 'offline');
-    handleDynamic(chatData, 'chat');
+    await delay(700);
+    const onReq = await apiGet(CFG.apiDATA, CFG.sheetOnline).catch(() => null);
+    handleDynamic(onReq, 'online');
 
-    // 4. Render ke layar
+    await delay(700);
+    const lvReq = await apiGet(CFG.apiDATA, CFG.sheetLive).catch(() => null);
+    handleDynamic(lvReq, 'live');
+
+    await delay(700);
+    const offReq = await apiGet(CFG.apiDATA, CFG.sheetOffline).catch(() => null);
+    handleDynamic(offReq, 'offline');
+
+    await delay(700);
+    const chatReq = await apiGet(CFG.apiDATA, CFG.sheetChat).catch(() => null);
+    handleDynamic(chatReq, 'chat');
+
+    // =========================================================
+    // FASE 3: LOAD BACKGROUND (Modul Stock Lanjutan)
+    // =========================================================
+    await delay(700);
+    const fsReq = await apiGet(CFG.apiDATA, CFG.sheetFlashSale).catch(() => null);
+    S.st.flashSale = (fsReq && Array.isArray(fsReq)) ? fsReq : [];
+
+    await delay(700);
+    const rwReq = await apiGet(CFG.apiDATA, CFG.sheetRiwayat).catch(() => null);
+    S.st.riwayat = (rwReq && Array.isArray(rwReq)) ? rwReq.reverse() : [];
+
+    // Render ulang di background agar data terbaru masuk ke layar tanpa disadari user
     renderAll();
-    if(manual) toast('Data berhasil diperbarui','ok');
 
   } catch(e) {
-    console.error(e);
-    toast('Terjadi kendala jaringan, beberapa data mungkin tidak termuat.','warn');
-    renderAll();
-  } finally {
-    showLoad(false); 
+    console.error('Fetch Error:', e);
+    toast('Terjadi kendala jaringan, sebagian data mungkin telat merespon.','warn');
+    showLoad(false);
   }
 }
- 
+
 function renderAll(){
   renderKcDashboard();
   renderKcTable();
@@ -4439,7 +4460,6 @@ function renderAll(){
   if(S.pg==='kc-rank')  renderKcRanking();
   if(S.pg==='pa-dash')  renderPaCharts();
   
-  // FIX LEADERBOARD: Render ulang jika pengguna sedang berada di halaman Leaderboard
   if(S.pg==='pa-lb') {
     renderPaLb();
   }
@@ -4800,7 +4820,7 @@ window.checkInlineChanged = function(id) {
     const savedHbRaw = inputHb.dataset.saved || '';
 
     const currentSbRaw = inputSb.value.replace(/\D/g, '');
-    const savedSbRaw = inputSb.dataset.saved || '0';
+    const savedSbRaw = inputSb.dataset.saved ?? '';
 
     // Cek apakah ada ketikan baru yang beda dari nilai tersimpan
     const stokChanged = (currentSbRaw !== '') && (currentSbRaw !== savedSbRaw);
@@ -4862,17 +4882,28 @@ window.fokusStok = function(el) {
 window.blurStok = function(el) {
     setTimeout(() => {
         if (el.dataset.updating === 'true') return;
-        let savedVal = el.dataset.saved || '0';
-        el.value = savedVal;
+
+        const savedVal = el.dataset.saved ?? '';
+        const currentVal = el.value.replace(/\D/g, '');
+        const hasPendingChange = currentVal !== '' && currentVal !== savedVal;
+
+        // Pertahankan angka baru agar tidak hilang sebelum tombol Update diklik.
+        // Nilai 0 ditampilkan sebagai tanda — seperti kolom Harga Terbaru.
+        if (hasPendingChange) {
+            el.value = currentVal;
+        } else {
+            el.value = (savedVal !== '' && Number(savedVal) !== 0) ? savedVal : '—';
+        }
+
         el.style.borderColor = '#cbd5e1'; el.style.background = '#f8fafc';
-        
-        // Cek kembali status tombol setelah auto-revert
+
+        // Cek kembali status tombol setelah input kehilangan fokus
         const id = el.id.replace('in-sb-', '');
         window.checkInlineChanged(id);
-    }, 200); 
+    }, 200);
 };
 
-// ---------------- FUNGSI UPDATE GABUNGAN PARSIAL ----------------
+// ---------------- FUNGSI UPDATE GABUNGAN PARSIAL (OPTIMISTIC UI) ----------------
 window.simpanInline = async function(id) {
     const inputHb = document.getElementById(`in-hb-${id}`);
     const inputSb = document.getElementById(`in-sb-${id}`);
@@ -4889,125 +4920,180 @@ window.simpanInline = async function(id) {
     const stokBaruRaw = inputSb.value.replace(/\D/g, '');
     
     const savedHb = inputHb.dataset.saved || '';
-    const savedSb = inputSb.dataset.saved || '0';
+    const savedSb = inputSb.dataset.saved ?? '';
 
     const idx = S.st.data.findIndex(x => String(x['Id Produk']) === String(id));
     if (idx === -1) {
         toast('❌ Produk tidak ditemukan!', 'warn');
-        inputHb.dataset.updating = 'false'; inputSb.dataset.updating = 'false';
+        inputHb.dataset.updating = 'false'; 
+        inputSb.dataset.updating = 'false';
         return;
     }
 
-    // Deteksi bidang mana yang sebenarnya diubah
+    // Deteksi bidang mana yang diubah
     const isStokChanged = (stokBaruRaw !== '') && (stokBaruRaw !== savedSb);
     const isHargaChanged = (hargaBaruRaw !== '') && (hargaBaruRaw !== savedHb);
 
     if (!isStokChanged && !isHargaChanged) {
         toast('⚠️ Tidak ada data yang diubah!', 'warn');
-        inputHb.dataset.updating = 'false'; inputSb.dataset.updating = 'false';
+        inputHb.dataset.updating = 'false'; 
+        inputSb.dataset.updating = 'false';
         return;
     }
-    
-    let oldText = btnEl.innerHTML;
+
+    // ═══════════════════════════════════════════════════════════
+    // 1. SIMPAN DATA LAMA (UNTUK ROLLBACK JIKA GAGAL)
+    // ═══════════════════════════════════════════════════════════
+    const backupData = {
+        stokLama: S.st.data[idx]['Stok Lama'],
+        stokBaru: S.st.data[idx]['Stok Baru'],
+        hargaJual: S.st.data[idx]['Harga Jual Saat Ini'],
+        hargaTerbaru: S.st.data[idx]['Harga Terbaru'],
+        savedHb: savedHb,
+        savedSb: savedSb,
+        labelHpText: hpLabel ? hpLabel.textContent : ''
+    };
+
+    // ═══════════════════════════════════════════════════════════
+    // 2. OPTIMISTIC UPDATE: UPDATE MEMORI & UI SECARA INSTAN!
+    // ═══════════════════════════════════════════════════════════
+    const updateData = {};
+
+    if (isStokChanged) {
+        const valStokBaru = parseInt(stokBaruRaw) || 0;
+        updateData['Stok Lama'] = valStokBaru;
+        updateData['Stok Baru'] = valStokBaru;
+        
+        S.st.data[idx]['Stok Lama'] = valStokBaru;
+        S.st.data[idx]['Stok Baru'] = valStokBaru;
+
+        // Perbarui kolom Stok Lama di layar saat itu juga, bukan hanya data memori.
+        const stokLamaCell = document.getElementById(`lbl-sl-${id}`);
+        if (stokLamaCell) stokLamaCell.textContent = String(valStokBaru);
+
+        // Nilai 0 tetap dikirim ke backend, sementara kolom Stok Baru menampilkan —.
+        inputSb.dataset.saved = valStokBaru === 0 ? '' : String(valStokBaru);
+        inputSb.value = valStokBaru === 0 ? '—' : String(valStokBaru);
+    }
+
+    if (isHargaChanged) {
+        updateData['Harga Jual Saat Ini'] = hargaBaruRaw;
+        updateData['Harga Terbaru'] = hargaBaruRaw;
+        
+        S.st.data[idx]['Harga Jual Saat Ini'] = hargaBaruRaw;
+        S.st.data[idx]['Harga Terbaru'] = hargaBaruRaw;
+        inputHb.dataset.saved = hargaBaruRaw;
+        if (hpLabel) hpLabel.textContent = 'Rp ' + window.formatNominal(hargaBaruRaw);
+    }
+
+    // Ubah tampilan tombol seketika menjadi "Tersimpan"
+    const oldText = btnEl.innerHTML;
     btnEl.disabled = true;
-    btnEl.innerHTML = '⏳...';
+    btnEl.style.background = '#10b981'; // Warna hijau
+    btnEl.innerHTML = '✓ Tersimpan';
+
+    if (typeof renderStStats === 'function') renderStStats();
+
+    // Reset lock status input
+    inputHb.dataset.updating = 'false';
+    inputSb.dataset.updating = 'false';
+
+    // ═══════════════════════════════════════════════════════════
+    // 3. KIRIM KE GOOGLE SHEET DI BACKGROUND (TIMEOUT 12 DETIK)
+    // ═══════════════════════════════════════════════════════════
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     try {
-        const updateData = {};
-
-        // 1. LOGIKA UPDATE STOK (Jika Stok Baru Di-edit)
-        if (isStokChanged) {
-            const valStokBaru = parseInt(stokBaruRaw) || 0;
-            updateData['Stok Lama'] = valStokBaru; // Stok Lama disesuaikan jadi sama dengan Stok Baru
-            updateData['Stok Baru'] = valStokBaru;
-        }
-
-        // 2. LOGIKA UPDATE HARGA (Jika Harga Baru Di-edit)
-        if (isHargaChanged) {
-            updateData['Harga Jual Saat Ini'] = hargaBaruRaw;
-            updateData['Harga Terbaru'] = hargaBaruRaw;
-        }
-
-        // 3. KIRIM KE GOOGLE SHEET (Hanya kirim field yang di-update)
-        // 🚀 BAGIAN INI SUDAH DIPERBAIKAN UNTUK APPS SCRIPT
         const r = await fetch(CFG.apiDATA, {
             method: 'POST',
-            redirect: 'follow', // Wajib untuk menghindari error CORS di GAS
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8' // Wajib untuk menghindari Preflight error
-            },
+            redirect: 'follow',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 action: 'update',
                 sheet: CFG.sheetStock,
                 keyCol: 'Id Produk',
                 keyVal: id,
                 data: updateData
-            })
+            }),
+            signal: controller.signal
         });
         
+        clearTimeout(timeoutId);
         const res = await r.json();
         if (res.error) throw new Error(res.error);
 
-        // 4. UPDATE MEMORI LOKAL S.st.data
-        if (isStokChanged) {
-            S.st.data[idx]['Stok Lama'] = updateData['Stok Lama'];
-            S.st.data[idx]['Stok Baru'] = updateData['Stok Baru'];
-            inputSb.dataset.saved = updateData['Stok Baru'];
-        }
+        toast('✨ Data berhasil diperbarui!', 'ok');
+
+        // Sinkronkan ulang tabel dan filter setelah server mengonfirmasi simpan.
+        // Ini membuat Stok Lama, Stok Baru, jumlah ringkasan, dan filter langsung konsisten.
+        if (typeof stFilter === 'function') stFilter();
+
+        // Kembalikan tombol ke state normal setelah 2 detik
+        setTimeout(() => {
+            if (btnEl) {
+                btnEl.style.background = '#94a3b8';
+                btnEl.innerHTML = 'Update';
+                if (typeof window.checkInlineChanged === 'function') {
+                    window.checkInlineChanged(id);
+                }
+            }
+        }, 2000);
+
+        // Ambil riwayat terbaru secara background tanpa menghambat UI
+        apiGet(CFG.apiDATA, CFG.sheetRiwayat).then(rwRes => {
+            if (Array.isArray(rwRes)) {
+                S.st.riwayat = rwRes.reverse();
+                if (typeof renderStRiwayat === 'function') renderStRiwayat();
+            }
+        }).catch(() => {});
+
+    } catch (err) {
+        clearTimeout(timeoutId);
+        console.error('Gagal update (Rollback dijalankan):', err);
         
+        // ═══════════════════════════════════════════════════════════
+        // 4. EKSEKUSI ROLLBACK (KEMBALIKAN KE DATA SEMULA JIKA GAGAL)
+        // ═══════════════════════════════════════════════════════════
+        S.st.data[idx]['Stok Lama'] = backupData.stokLama;
+        S.st.data[idx]['Stok Baru'] = backupData.stokBaru;
+        S.st.data[idx]['Harga Jual Saat Ini'] = backupData.hargaJual;
+        S.st.data[idx]['Harga Terbaru'] = backupData.hargaTerbaru;
+
+        // Kembalikan juga teks Stok Lama bila penyimpanan gagal.
+        const stokLamaCell = document.getElementById(`lbl-sl-${id}`);
+        if (stokLamaCell) stokLamaCell.textContent = String(parseInt(backupData.stokLama, 10) || 0);
+
+        // Kembalikan nilai elemen UI
+        inputHb.dataset.saved = backupData.savedHb;
+        inputSb.dataset.saved = backupData.savedSb;
+
         if (isHargaChanged) {
-            S.st.data[idx]['Harga Jual Saat Ini'] = updateData['Harga Jual Saat Ini'];
-            S.st.data[idx]['Harga Terbaru'] = updateData['Harga Terbaru'];
-            inputHb.dataset.saved = updateData['Harga Terbaru'];
-            if (hpLabel) hpLabel.textContent = 'Rp ' + window.formatNominal(hargaBaruRaw);
+            inputHb.value = backupData.savedHb ? ('Rp ' + window.formatNominal(backupData.savedHb)) : '—';
+            if (hpLabel) hpLabel.textContent = backupData.labelHpText;
+        }
+        if (isStokChanged) {
+            inputSb.value = backupData.savedSb || '—';
         }
 
         if (typeof renderStStats === 'function') renderStStats();
 
-        toast('✨ Data berhasil diperbarui!', 'ok');
+        // Tampilkan indikator error pada tombol
+        btnEl.disabled = false;
+        btnEl.style.background = '#ef4444'; // Warna merah
+        btnEl.innerHTML = '❌ Gagal';
 
-        // 5. RE-RENDER TABEL STOK
-        if (typeof renderStTableBody === 'function') renderStTableBody();
+        toast('❌ Gagal menyimpan! Data dikembalikan ke semula.', 'err');
 
-        // ═══════════════════════════════════════════════════════════
-        // 6. MENGAMBIL DATA RIWAYAT TERBARU & RE-RENDER TABEL RIWAYAT
-        // ═══════════════════════════════════════════════════════════
-        try {
-            const rwRes = await apiGet(CFG.apiDATA, CFG.sheetRiwayat);
-            if (Array.isArray(rwRes)) {
-                S.st.riwayat = rwRes.reverse();
-            } else {
-                S.st.riwayat = [];
+        setTimeout(() => {
+            if (btnEl) {
+                btnEl.style.background = '#94a3b8';
+                btnEl.innerHTML = oldText;
+                if (typeof window.checkInlineChanged === 'function') {
+                    window.checkInlineChanged(id);
+                }
             }
-            if (typeof renderStRiwayat === 'function') {
-                renderStRiwayat();
-            }
-        } catch (errRiwayat) {
-            console.error('Gagal mengambil update riwayat:', errRiwayat);
-        }
-
-    } catch (err) {
-        console.error('Gagal update:', err);
-        toast('❌ Gagal menyimpan ke Spreadsheet!', 'err');
-        
-        // Revert ke data saved awal jika gagal
-        let savedHbVal = inputHb.dataset.saved || '';
-        inputHb.value = savedHbVal ? ('Rp ' + window.formatNominal(savedHbVal)) : '—';
-        
-        let savedSbVal = inputSb.dataset.saved || '0';
-        inputSb.value = savedSbVal;
-
-        if (btnEl) {
-            btnEl.style.background = '#ef4444'; 
-            btnEl.innerHTML = 'Gagal';
-            setTimeout(() => { 
-                window.checkInlineChanged(id);
-                btnEl.innerHTML = oldText; 
-            }, 1800);
-        }
-    } finally {
-        if (inputHb) inputHb.dataset.updating = 'false';
-        if (inputSb) inputSb.dataset.updating = 'false';
+        }, 2500);
     }
 };
 
@@ -5025,13 +5111,16 @@ function renderStTableBody(){
   if(!slice.length){ tb.innerHTML=''; }
   else {
     tb.innerHTML=slice.map(item=>{
-      const sOld=parseInt(item['Stok Lama'])||0, sNew=parseInt(item['Stok Baru'])||0;
+      const sOld=parseInt(item['Stok Lama'])||0;
       const id=esc(item['Id Produk']||''), nm=esc(item['Nama Produk']||''), vr=esc(item['Nama Variasi']||'');
       
       const hp=item['Harga Jual Saat Ini']||'';
       const hb=item['Harga Terbaru']||'';
 
       const displayHp = hp ? fmtRp(hp) : '—';
+      const stokBaruValue = String(item['Stok Baru'] ?? '').replace(/\D/g, '');
+      const rawSb = (stokBaruValue && Number(stokBaruValue) !== 0) ? stokBaruValue : '';
+      const displaySb = rawSb || '—';
       const rawHb = (hb && hb !== '0') ? String(hb).replace(/\D/g, '') : '';
       const displayHb = rawHb ? ('Rp ' + window.formatNominal(rawHb)) : '—';
 
@@ -5039,15 +5128,15 @@ function renderStTableBody(){
         <td data-label="ID Produk" style="font-family:var(--mono);font-size:10.5px">${id}</td>
         <td data-label="Nama Produk"><div style="font-weight:700;font-size:12.5px">${nm}</div></td>
         <td data-label="Variasi" style="font-size:11px;color:var(--t2)">${vr||'—'}</td>
-        <td data-label="Stok Lama" class="num">${sOld}</td>
+        <td id="lbl-sl-${id}" data-label="Stok Lama" class="num">${sOld}</td>
         
         <!-- INPUT STOK BARU -->
         <td data-label="Stok Baru" class="num">
           <input type="text"
                  id="in-sb-${id}"
-                 data-saved="${sNew}"
-                 value="${sNew}"
-                 placeholder="0"
+                 data-saved="${rawSb}"
+                 value="${displaySb}"
+                 placeholder="—"
                  onfocus="fokusStok(this)"
                  oninput="formatStokLive(this); checkInlineChanged('${id}')"
                  onblur="blurStok(this)"
@@ -9380,7 +9469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     : "https://docs.google.com/spreadsheets/d/1HYxwDlshoD8atnCjxlKxWQyKtqOcSu8kzNrRNYjJBXQ/edit?gid=0#gid=0&fvid=1273995544";
 
   // 2. Susun teks pesan 
-  const pesanTeks = `*INFO REVISI HARGA & STOK* \nSegera Revisi Harga Terbaru. Semua Admin Segera Update Ke E-commerce Nya Masing-masing. Dalam Waktu 3 Jam Revisi Harga Akan Otomatis Hilang Jadi Segera Di Revisi\n\n🔗 *Cek Data:* ${spreadsheetUrl}`;
+  const pesanTeks = `*INFO REVISI HARGA & STOK* \nSegera Revisi Harga Terbaru. Semua Admin Segera Update Ke E-commerce Nya Masing-masing. Dalam Waktu 2 Jam Revisi Harga Akan Otomatis Hilang Jadi Segera Di Revisi\n\n🔗 *Cek Data:* ${spreadsheetUrl}`;
 
   // 3. Encode teks
   const pesanEncoded = encodeURIComponent(pesanTeks);
